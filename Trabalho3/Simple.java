@@ -4,75 +4,406 @@ public class Simple implements SimpleConstants {
 
   public static void main(String args[]) throws ParseException,IOException {
 
- Simple parser = new Simple(new FileInputStream(args[0]));
- parser.Simple();
+ Simple analisador = new Simple(new FileInputStream(args[0]));
+ analisador.Simple();
   }
 
-// SIMPLE -> "main" "{" COMANDOS  "}"
   static final public void Simple() throws ParseException {
-    jj_consume_token(MAIN);
-    jj_consume_token(ACHAVES);
-    Comandos();
-    jj_consume_token(FCHAVES);
-    jj_consume_token(0);
-  }
-
-// COMANDOS -> COM ";"  COMANDOS'
-  static final public void Comandos() throws ParseException {
-    Com();
-    jj_consume_token(PV);
-    ComandosL();
-  }
-
-// COMANDOS'->   COM ";" COMANDOS' | epsilon
-  static final public void ComandosL() throws ParseException {
+ Token t;
+    Main();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case PRINT:
-    case ID:
-      Com();
-      jj_consume_token(PV);
-      ComandosL();
+    case FUN:
+      Func();
       break;
     default:
       jj_la1[0] = jj_gen;
       ;
     }
+    jj_consume_token(0);
   }
 
-// COM -> id ":=" EXP | "print" "(" EXP ")"
-  static final public void Com() throws ParseException {
+  static final public void Main() throws ParseException {
+ Token t;
+    jj_consume_token(VOID);
+    jj_consume_token(MAIN);
+    jj_consume_token(APARENTESES);
+    jj_consume_token(FPARENTESES);
+    jj_consume_token(ACHAVES);
+    Vardecl();
+    SeqComandos();
+    jj_consume_token(FCHAVES);
+  }
+
+// VARDECL -> "newVar" TIPO TOKEN_id ";" VARDECL | vazio
+  static final public void Vardecl() throws ParseException {
+  Token t;
+    jj_consume_token(NEWVAR);
+    Tipo();
+    jj_consume_token(ID);
+    jj_consume_token(PONTOVIRGULA);
+    VarDeclRest();
+  }
+
+  static final public void VarDeclRest() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case ID:
+    case NEWVAR:
+      jj_consume_token(NEWVAR);
+      Tipo();
       jj_consume_token(ID);
-      jj_consume_token(ATRIB);
-      Exp();
-      break;
-    case PRINT:
-      jj_consume_token(PRINT);
-      jj_consume_token(APARENTESES);
-      Exp();
-      jj_consume_token(FPARENTESES);
+      jj_consume_token(PONTOVIRGULA);
+      VarDeclRest();
       break;
     default:
       jj_la1[1] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
+      ;
     }
   }
 
-// EXP -> num | id
-  static final public void Exp() throws ParseException {
+// TIPO -> "float" | "boolean" | "void"
+  static final public void Tipo() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case NUM:
-      jj_consume_token(NUM);
+    case FLOAT:
+      jj_consume_token(FLOAT);
       break;
-    case ID:
-      jj_consume_token(ID);
+    case BOOLEAN:
+      jj_consume_token(BOOLEAN);
+      break;
+    case VOID:
+      jj_consume_token(VOID);
       break;
     default:
       jj_la1[2] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
+    }
+  }
+
+// SEQCOMANDOS -> COMANDO SEQCOMANDOS | vazio
+  static final public void SeqComandos() throws ParseException {
+    Comando();
+    SeqComandosRest();
+  }
+
+  static final public void SeqComandosRest() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case PRINTOUT:
+    case IF:
+    case WHILE:
+    case RETURN:
+    case ID:
+      Comando();
+      break;
+    default:
+      jj_la1[3] = jj_gen;
+      ;
+    }
+  }
+
+// COMANDO -> TOKEN_id COMANDO'
+//    | "if" "(" EXP ")" "then" "{" SEQCOMANDOS "}" ";"
+//    | "while" "(" EXP ")" "{" SEQCOMANDOS "}" ";"
+//    | "repeat" "{" SEQCOMANDOS "}" "until" "(" EXP ")" ";"
+//    | "return" EXP ";" 
+//    | "printOut" "(" EXP ")" ";"
+  static final public void Comando() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case ID:
+      jj_consume_token(ID);
+      ComandoLinha1();
+      break;
+    case IF:
+      jj_consume_token(IF);
+      jj_consume_token(APARENTESES);
+      Exp();
+      jj_consume_token(FPARENTESES);
+      jj_consume_token(THEN);
+      jj_consume_token(ACHAVES);
+      SeqComandos();
+      jj_consume_token(FCHAVES);
+      jj_consume_token(PONTOVIRGULA);
+      break;
+    case WHILE:
+      jj_consume_token(WHILE);
+      jj_consume_token(APARENTESES);
+      Exp();
+      jj_consume_token(FPARENTESES);
+      jj_consume_token(ACHAVES);
+      SeqComandos();
+      jj_consume_token(FCHAVES);
+      jj_consume_token(PONTOVIRGULA);
+      break;
+    case RETURN:
+      jj_consume_token(RETURN);
+      Exp();
+      jj_consume_token(PONTOVIRGULA);
+      break;
+    case PRINTOUT:
+      jj_consume_token(PRINTOUT);
+      jj_consume_token(APARENTESES);
+      Exp();
+      jj_consume_token(FPARENTESES);
+      jj_consume_token(PONTOVIRGULA);
+      break;
+    default:
+      jj_la1[4] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+  static final public void ComandoLinha1() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case APARENTESES:
+      jj_consume_token(APARENTESES);
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case APARENTESES:
+      case TRUE:
+      case FALSE:
+      case ID:
+      case NUM:
+        ListaExp();
+        break;
+      default:
+        jj_la1[5] = jj_gen;
+        ;
+      }
+      jj_consume_token(FPARENTESES);
+      jj_consume_token(PONTOVIRGULA);
+      break;
+    case IGUAL:
+      jj_consume_token(IGUAL);
+      ComandoLinha2();
+      break;
+    default:
+      jj_la1[6] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+  static final public void ComandoLinha2() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case APARENTESES:
+    case TRUE:
+    case FALSE:
+    case ID:
+    case NUM:
+      Exp();
+      jj_consume_token(PONTOVIRGULA);
+      break;
+    case READINPUT:
+      jj_consume_token(READINPUT);
+      jj_consume_token(APARENTESES);
+      jj_consume_token(FPARENTESES);
+      jj_consume_token(PONTOVIRGULA);
+      break;
+    default:
+      jj_la1[7] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+// EXP -> "(" EXP OP EXP ")" | FATOR
+  static final public void Exp() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case APARENTESES:
+      jj_consume_token(APARENTESES);
+      Exp();
+      Op();
+      Exp();
+      jj_consume_token(FPARENTESES);
+      break;
+    case TRUE:
+    case FALSE:
+    case ID:
+    case NUM:
+      Fator();
+      break;
+    default:
+      jj_la1[8] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+// FATOR -> TOKEN_id FATOR' | TOKEN_numliteral | "true" | "false"
+// FATOR' -> "(" LISTAEXP? ")" | vazio
+  static final public void Fator() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case ID:
+      jj_consume_token(ID);
+      FatorLinha();
+      break;
+    case NUM:
+      jj_consume_token(NUM);
+      break;
+    case TRUE:
+      jj_consume_token(TRUE);
+      break;
+    case FALSE:
+      jj_consume_token(FALSE);
+      break;
+    default:
+      jj_la1[9] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+  static final public void FatorLinha() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case APARENTESES:
+      jj_consume_token(APARENTESES);
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case APARENTESES:
+      case TRUE:
+      case FALSE:
+      case ID:
+      case NUM:
+        ListaExp();
+        break;
+      default:
+        jj_la1[10] = jj_gen;
+        ;
+      }
+      jj_consume_token(FPARENTESES);
+      break;
+    default:
+      jj_la1[11] = jj_gen;
+      ;
+    }
+  }
+
+// OP -> "+" | "-" | "*" | "/" | "&" | "|" | "<" | ">" | "=="
+  static final public void Op() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case SOMA:
+      jj_consume_token(SOMA);
+      break;
+    case SUBTRACAO:
+      jj_consume_token(SUBTRACAO);
+      break;
+    case MULTIPLICACAO:
+      jj_consume_token(MULTIPLICACAO);
+      break;
+    case DIVISAO:
+      jj_consume_token(DIVISAO);
+      break;
+    case AND:
+      jj_consume_token(AND);
+      break;
+    case OU:
+      jj_consume_token(OU);
+      break;
+    case MENOR:
+      jj_consume_token(MENOR);
+      break;
+    case MAIOR:
+      jj_consume_token(MAIOR);
+      break;
+    case IGUALA:
+      jj_consume_token(IGUALA);
+      break;
+    default:
+      jj_la1[12] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+// LISTAEXP -> EXP ("," EXP)*
+  static final public void ListaExp() throws ParseException {
+    Exp();
+    label_1:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case VIRGULA:
+        ;
+        break;
+      default:
+        jj_la1[13] = jj_gen;
+        break label_1;
+      }
+      jj_consume_token(VIRGULA);
+      Exp();
+    }
+  }
+
+// FUNC -> "fun" TIPO TOKEN_id "(" LISTAARG? ")" "{" VARDECL SEQCOMANDOS "}" FUNC'
+// FUNC' -> "fun" TIPO TOKEN_id "(" LISTAARG? ")" "{" VARDECL SEQCOMANDOS "}" FUNC' | vazio
+  static final public void Func() throws ParseException {
+    jj_consume_token(FUN);
+    Tipo();
+    jj_consume_token(ID);
+    jj_consume_token(APARENTESES);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case VOID:
+    case FLOAT:
+    case BOOLEAN:
+      ListaArg();
+      break;
+    default:
+      jj_la1[14] = jj_gen;
+      ;
+    }
+    jj_consume_token(FPARENTESES);
+    jj_consume_token(ACHAVES);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case NEWVAR:
+      Vardecl();
+      SeqComandos();
+      break;
+    default:
+      jj_la1[15] = jj_gen;
+      ;
+    }
+    jj_consume_token(FCHAVES);
+    FuncRest();
+  }
+
+  static final public void FuncRest() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case FUN:
+      Func();
+      break;
+    default:
+      jj_la1[16] = jj_gen;
+      ;
+    }
+  }
+
+// LISTAARG -> TIPO TOKEN_id ("," TIPO TOKEN_id)*
+  static final public void ListaArg() throws ParseException {
+    Tipo();
+    jj_consume_token(ID);
+    label_2:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case VIRGULA:
+        ;
+        break;
+      default:
+        jj_la1[17] = jj_gen;
+        break label_2;
+      }
+      jj_consume_token(VIRGULA);
+      Tipo();
+      jj_consume_token(ID);
+    }
+  }
+
+  static final public void ListaArgRest() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case VIRGULA:
+      jj_consume_token(VIRGULA);
+      Tipo();
+      jj_consume_token(ID);
+      ListaArgRest();
+      break;
+    default:
+      jj_la1[18] = jj_gen;
+      ;
     }
   }
 
@@ -86,13 +417,18 @@ public class Simple implements SimpleConstants {
   static public Token jj_nt;
   static private int jj_ntk;
   static private int jj_gen;
-  static final private int[] jj_la1 = new int[3];
+  static final private int[] jj_la1 = new int[19];
   static private int[] jj_la1_0;
+  static private int[] jj_la1_1;
   static {
       jj_la1_init_0();
+      jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x4400,0x4400,0x6000,};
+      jj_la1_0 = new int[] {0x0,0x10000,0x6040,0x2a8000,0x2a8000,0xc00200,0x1200,0xd00200,0xc00200,0xc00000,0xc00200,0x200,0xff000000,0x0,0x6040,0x10000,0x0,0x0,0x0,};
+   }
+   private static void jj_la1_init_1() {
+      jj_la1_1 = new int[] {0x4,0x0,0x0,0x8,0x8,0x18,0x0,0x18,0x18,0x18,0x18,0x0,0x1,0x2,0x0,0x0,0x4,0x2,0x2,};
    }
 
   /** Constructor with InputStream. */
@@ -113,7 +449,7 @@ public class Simple implements SimpleConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 19; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -127,7 +463,7 @@ public class Simple implements SimpleConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 19; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -144,7 +480,7 @@ public class Simple implements SimpleConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 19; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -154,7 +490,7 @@ public class Simple implements SimpleConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 19; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -170,7 +506,7 @@ public class Simple implements SimpleConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 19; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -179,7 +515,7 @@ public class Simple implements SimpleConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 3; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 19; i++) jj_la1[i] = -1;
   }
 
   static private Token jj_consume_token(int kind) throws ParseException {
@@ -230,21 +566,24 @@ public class Simple implements SimpleConstants {
   /** Generate ParseException. */
   static public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[15];
+    boolean[] la1tokens = new boolean[37];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 19; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
             la1tokens[j] = true;
           }
+          if ((jj_la1_1[i] & (1<<j)) != 0) {
+            la1tokens[32+j] = true;
+          }
         }
       }
     }
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < 37; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

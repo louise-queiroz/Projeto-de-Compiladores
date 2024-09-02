@@ -69,9 +69,9 @@ public interface KarloffConstants {
   /** RegularExpression Id. */
   int FUN = 34;
   /** RegularExpression Id. */
-  int NUM = 35;
+  int ID = 35;
   /** RegularExpression Id. */
-  int ID = 36;
+  int NUM = 36;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -113,8 +113,8 @@ public interface KarloffConstants {
     "\"==\"",
     "\",\"",
     "\"fun\"",
-    "<NUM>",
     "<ID>",
+    "<NUM>",
   };
 
 }

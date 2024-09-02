@@ -11,23 +11,67 @@ public interface SimpleConstants {
   /** RegularExpression Id. */
   int MAIN = 5;
   /** RegularExpression Id. */
-  int ACHAVES = 6;
+  int VOID = 6;
   /** RegularExpression Id. */
-  int FCHAVES = 7;
+  int ACHAVES = 7;
   /** RegularExpression Id. */
-  int APARENTESES = 8;
+  int FCHAVES = 8;
   /** RegularExpression Id. */
-  int FPARENTESES = 9;
+  int APARENTESES = 9;
   /** RegularExpression Id. */
-  int PRINT = 10;
+  int FPARENTESES = 10;
   /** RegularExpression Id. */
-  int ATRIB = 11;
+  int PONTOVIRGULA = 11;
   /** RegularExpression Id. */
-  int PV = 12;
+  int IGUAL = 12;
   /** RegularExpression Id. */
-  int NUM = 13;
+  int FLOAT = 13;
   /** RegularExpression Id. */
-  int ID = 14;
+  int BOOLEAN = 14;
+  /** RegularExpression Id. */
+  int PRINTOUT = 15;
+  /** RegularExpression Id. */
+  int NEWVAR = 16;
+  /** RegularExpression Id. */
+  int IF = 17;
+  /** RegularExpression Id. */
+  int THEN = 18;
+  /** RegularExpression Id. */
+  int WHILE = 19;
+  /** RegularExpression Id. */
+  int READINPUT = 20;
+  /** RegularExpression Id. */
+  int RETURN = 21;
+  /** RegularExpression Id. */
+  int TRUE = 22;
+  /** RegularExpression Id. */
+  int FALSE = 23;
+  /** RegularExpression Id. */
+  int SOMA = 24;
+  /** RegularExpression Id. */
+  int SUBTRACAO = 25;
+  /** RegularExpression Id. */
+  int MULTIPLICACAO = 26;
+  /** RegularExpression Id. */
+  int DIVISAO = 27;
+  /** RegularExpression Id. */
+  int AND = 28;
+  /** RegularExpression Id. */
+  int OU = 29;
+  /** RegularExpression Id. */
+  int MENOR = 30;
+  /** RegularExpression Id. */
+  int MAIOR = 31;
+  /** RegularExpression Id. */
+  int IGUALA = 32;
+  /** RegularExpression Id. */
+  int VIRGULA = 33;
+  /** RegularExpression Id. */
+  int FUN = 34;
+  /** RegularExpression Id. */
+  int ID = 35;
+  /** RegularExpression Id. */
+  int NUM = 36;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -40,15 +84,37 @@ public interface SimpleConstants {
     "\"\\n\"",
     "\"\\r\"",
     "\"main\"",
+    "\"void\"",
     "\"{\"",
     "\"}\"",
     "\"(\"",
     "\")\"",
-    "\"print\"",
-    "\":=\"",
     "\";\"",
-    "<NUM>",
+    "\"=\"",
+    "\"float\"",
+    "\"boolean\"",
+    "\"printOut\"",
+    "\"newVar\"",
+    "\"if\"",
+    "\"then\"",
+    "\"while\"",
+    "\"readInput\"",
+    "\"return\"",
+    "\"true\"",
+    "\"false\"",
+    "\"+\"",
+    "\"-\"",
+    "\"*\"",
+    "\"/\"",
+    "\"&\"",
+    "\"|\"",
+    "\"<\"",
+    "\">\"",
+    "\"==\"",
+    "\",\"",
+    "\"fun\"",
     "<ID>",
+    "<NUM>",
   };
 
 }

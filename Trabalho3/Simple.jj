@@ -1,14 +1,16 @@
-PARSER_BEGIN(Karloff)
+PARSER_BEGIN(Simple)
 import java.io.*;
-public class Karloff {
+public class Simple {
 
-  public static void main(String args[]) throws ParseException, IOException {
-    Karloff analisador = new Karloff(new FileInputStream(args[0]));
-    analisador.Karloff();
+  public static void main(String args[]) throws ParseException,IOException {
+    
+ Simple analisador = new Simple(new FileInputStream(args[0]));
+ analisador.Simple();
   }
 
 }
-PARSER_END(Karloff)
+
+PARSER_END(Simple)
 
 SKIP :
 {
@@ -21,7 +23,7 @@ SKIP :
 TOKEN :
 {
   <MAIN: "main">
-|  <VOID: "void">
+| <VOID: "void">
 | <ACHAVES: "{">
 | <FCHAVES: "}">
 | <APARENTESES: "(">
@@ -52,42 +54,49 @@ TOKEN :
 | <FUN: "fun"> 
 }
 
+
 TOKEN :
 {
-  <NUM : (["0"-"9"]) + (["."](["0"-"9"])+)>
- |< ID: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9"])*>
+  <ID: ["a"-"z", "A"-"Z"] (["a"-"z", "A"-"Z", "0"-"9"])* ("_" (["a"-"z", "A"-"Z", "0"-"9"])+)* >
+|  < NUM: (["0"-"9"])+ ("." (["0"-"9"])+)? (["e", "E"] (["+", "-"])? (["0"-"9"])+)? >
 }
 
-void Karloff() : {} {
-  Main() (Func())* <EOF>
+void Simple () :
+{Token t;}
+{
+  Main() (Func())?
+<EOF> 
 }
 
-// MAIN -> "void" "main" "(" ")" "{" VARDECL SEQCOMANDOS "}"
-void Main() : {} {
-  <VOID> <MAIN> <APARENTESES> <FPARENTESES> <ACHAVES> (VarDecl() SeqComandos())? <FCHAVES>
+void Main () :
+{Token t;}
+{
+  <VOID> <MAIN> <APARENTESES> <FPARENTESES> <ACHAVES> Vardecl() SeqComandos() <FCHAVES>
 }
 
 // VARDECL -> "newVar" TIPO TOKEN_id ";" VARDECL | vazio
-void VarDecl() : {} {
-  <NEWVAR> Tipo() <ID> <PONTOVIRGULA> (VarDeclRest())?
+void Vardecl() : {
+  Token t;
+} {
+  <NEWVAR> Tipo() <ID> <PONTOVIRGULA> VarDeclRest()
 }
 
 void VarDeclRest() : {} {
-  VarDecl()
+  (<NEWVAR> Tipo() <ID> <PONTOVIRGULA> VarDeclRest())?
 }
 
-// TIPO -> "float" | "boolean"
+// TIPO -> "float" | "boolean" | "void"
 void Tipo() : {} {
-  <FLOAT> | <BOOLEAN>
+  <FLOAT> | <BOOLEAN> | <VOID>
 }
 
 // SEQCOMANDOS -> COMANDO SEQCOMANDOS | vazio
 void SeqComandos() : {} {
-  (Comando() (SeqComandosRest()))*
+  Comando() (SeqComandosRest())
 }
 
 void SeqComandosRest() : {} {
-  Comando()
+  (Comando())?
 }
 
 // COMANDO -> TOKEN_id COMANDO'
@@ -105,7 +114,7 @@ void Comando() : {} {
 }
 
 void ComandoLinha1() : {} {
-  ( <APARENTESES> (ListaExp())? <FPARENTESES> <PONTOVIRGULA> )
+   <APARENTESES> (ListaExp())? <FPARENTESES> <PONTOVIRGULA> 
 | <IGUAL> ComandoLinha2()
 }
 
@@ -146,11 +155,11 @@ void ListaExp() : {} {
 // FUNC -> "fun" TIPO TOKEN_id "(" LISTAARG? ")" "{" VARDECL SEQCOMANDOS "}" FUNC'
 // FUNC' -> "fun" TIPO TOKEN_id "(" LISTAARG? ")" "{" VARDECL SEQCOMANDOS "}" FUNC' | vazio
 void Func() : {} {
-  <FUN> Tipo() <ID> <APARENTESES> (ListaArg())? <FPARENTESES> <ACHAVES> (VarDecl() SeqComandos())? <FCHAVES> (FuncRest())?
+  <FUN> Tipo() <ID> <APARENTESES> (ListaArg())? <FPARENTESES> <ACHAVES> (Vardecl() SeqComandos())? <FCHAVES> FuncRest()
 }
 
 void FuncRest() : {} {
-  Func()
+  (Func())?
 }
 
 // LISTAARG -> TIPO TOKEN_id ("," TIPO TOKEN_id)*

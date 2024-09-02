@@ -1,0 +1,26 @@
+void main() {
+  newVar float num1;
+  newVar float num2;
+  newVar boolean resultado;
+
+  num1 = 10;
+  num2 = 20;
+
+  resultado = compararNumeros(num1, num2);
+
+  if (resultado) then {
+    System.output(num1);
+  } else {
+    System.output(num2);
+  };
+
+  return; 
+}
+
+fun boolean compararNumeros(integer n1, integer n2) {
+  if (n1 > n2) then {
+    return true;
+  } else {
+    return false;
+  };
+}

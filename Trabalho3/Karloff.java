@@ -5,13 +5,11 @@ public class Karloff implements KarloffConstants {
   public static void main(String args[]) throws ParseException,IOException {
 
  Karloff analisador = new Karloff(new FileInputStream(args[0]));
- System.out.println("lalalla");
  analisador.Karloff();
   }
 
   static final public void Karloff() throws ParseException {
  Token t;
-   System.out.println("aaaaaaaaaaaaaaa");
     Main();
     Func();
     jj_consume_token(0);

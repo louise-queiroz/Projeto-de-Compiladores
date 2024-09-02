@@ -2,14 +2,12 @@ PARSER_BEGIN(Karloff)
 import java.io.*;
 public class Karloff {
 
-  public static void main(String args[]) throws ParseException,IOException {
-    
- Karloff analisador = new Karloff(new FileInputStream(args[0]));
- analisador.Karloff();
+  public static void main(String args[]) throws ParseException, IOException {
+    Karloff analisador = new Karloff(new FileInputStream(args[0]));
+    analisador.Karloff();
   }
 
 }
-
 PARSER_END(Karloff)
 
 SKIP :
@@ -56,45 +54,95 @@ TOKEN :
 
 TOKEN :
 {
-  <NUM : (["0"-"9"]) + (["."](["0"-"9"])+)>
- |< ID: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9"])*>
+  <NUM: (["0"-"9"]) + (["."](["0"-"9"])+)>
+ | <ID: ["a"-"z", "A"-"Z"] ( ["a"-"z", "A"-"Z", "0"-"9"])*>
 }
 
+// Define o início do parser que processa um bloco MAIN e pode incluir funções
+void Karloff() : {} {
+  Main() (Func())? <EOF>
+}
 
-void Karloff () :
-{Token t;}
-{
+// MAIN -> "void" "main" "(" ")" "{" VARDECL SEQCOMANDOS "}"
+void Main() : {} {
+  <VOID> <MAIN> <APARENTESES> <FPARENTESES> <ACHAVES> (VarDecl() SeqComandos())? <FCHAVES>
+}
 
-(
-  <MAIN> { System.out.println("Palavra reservada: main"); }
-| <VOID> { System.out.println("Palavra reservada: void"); }
-| <ACHAVES> { System.out.println("Abre chaves: {"); }
-| <FCHAVES> { System.out.println("Fecha chaves: }"); }
-| <APARENTESES> { System.out.println("Abre parenteses: ("); }
-| <FPARENTESES> { System.out.println("Fecha parenteses: )"); }
-| <PONTOVIRGULA> { System.out.println("Ponto e virgula: ;"); }
-| <IGUAL> { System.out.println("Atribuição: = "); }
-| <FLOAT> { System.out.println("Palavra reservada: float"); }
-| <BOOLEAN> { System.out.println("Palavra reservada: boolean"); }
-| <PRINTOUT> { System.out.println("Palavra reservada: printOut"); }
-| <NEWVAR> { System.out.println("Palavra reservada: newVar"); }
-| t=<NUM> { System.out.println("Número: " + t.image); }
-| t=<ID> { System.out.println("Identificador: " + t.image); }
-| <SOMA> { System.out.println("Soma: +"); }
-| <SUBTRACAO> { System.out.println("Subtracao: -"); }
-| <MULTIPLICACAO> { System.out.println("Multiplicacao: *"); }
-| <DIVISAO> { System.out.println("Divisao: /"); }
-| <AND> { System.out.println("AND: &"); }
-| <OU> { System.out.println("OU: |"); }
-| <MENOR> { System.out.println("Menor que: <"); }
-| <MAIOR> { System.out.println("Maior que: >"); }
-| <IGUALA> { System.out.println("Igual a: =="); }
-| <FUN> { System.out.println("Fun: fun"); }
-| <WHILE> { System.out.println("Palavra reservada: while"); }
-| <IF> { System.out.println("Palavra reservada: if"); }
-| <THEN> { System.out.println("Palavra reservada: then"); }
-| <READINPUT> { System.out.println("Palavra reservada: readInput"); }
-| <RETURN> { System.out.println("Palavra reservada: return"); }
-)*
-<EOF>
+// VARDECL -> "newVar" TIPO ID PONTOVIRGULA VARDECL | vazio
+void VarDecl() : {} {
+  (<NEWVAR> Tipo() <ID> <PONTOVIRGULA> (VarDecl())?)?
+}
+
+// TIPO -> "float" | "boolean"
+void Tipo() : {} {
+  <FLOAT> | <BOOLEAN>
+}
+
+// SEQCOMANDOS -> COMANDO SEQCOMANDOS | vazio
+void SeqComandos() : {} {
+  (Comando() (SeqComandos())?)?
+}
+
+// COMANDO -> ID COMANDO' | "if" "(" EXP ")" "then" "{" SEQCOMANDOS "}" ";" | "while" "(" EXP ")" "{" SEQCOMANDOS "}" ";" | "repeat" "{" SEQCOMANDOS "}" "until" "(" EXP ")" ";" | "return" EXP ";" | "printOut" "(" EXP ")" ";"
+void Comando() : {} {
+  <ID> ComandoLinha1()
+| <IF> <APARENTESES> Exp() <FPARENTESES> <THEN> <ACHAVES> SeqComandos() <FCHAVES> <PONTOVIRGULA>
+| <WHILE> <APARENTESES> Exp() <FPARENTESES> <ACHAVES> SeqComandos() <FCHAVES> <PONTOVIRGULA>
+| <REPEAT> <ACHAVES> SeqComandos() <FCHAVES> <UNTIL> <APARENTESES> Exp() <FPARENTESES> <PONTOVIRGULA>
+| <RETURN> Exp() <PONTOVIRGULA>
+| <PRINTOUT> <APARENTESES> Exp() <FPARENTESES> <PONTOVIRGULA>
+}
+
+// ComandoLinha1 pode ser uma expressão ou uma chamada de leitura de entrada
+void ComandoLinha1() : {} {
+  (<APARENTESES> (ListaExp())? <FPARENTESES> <PONTOVIRGULA>) | <IGUAL> ComandoLinha2()
+}
+
+// ComandoLinha2 pode ser uma expressão ou uma chamada de leitura de entrada
+void ComandoLinha2() : {} {
+  (Exp() <PONTOVIRGULA>) | (<READINPUT> <APARENTESES> <FPARENTESES> <PONTOVIRGULA>)
+}
+
+// EXP -> "(" EXP OP EXP ")" | FATOR
+void Exp() : {} {
+  <APARENTESES> Exp() Op() Exp() <FPARENTESES>
+| Fator()
+}
+
+// FATOR -> ID FATOR' | NUM | "true" | "false"
+void Fator() : {} {
+  <ID> FatorLinha()
+| <NUM>
+| <TRUE>
+| <FALSE>
+}
+
+// FatorLinha trata de chamadas de funções
+void FatorLinha() : {} {
+  (<APARENTESES> (ListaExp())? <FPARENTESES>)?
+}
+
+// OP -> "+" | "-" | "*" | "/" | "&" | "|" | "<" | ">" | "=="
+void Op() : {} {
+  <SOMA> | <SUBTRACAO> | <MULTIPLICACAO> | <DIVISAO> | <AND> | <OU> | <MENOR> | <MAIOR> | <IGUALA>
+}
+
+// LISTAEXP -> EXP ("," EXP)*
+void ListaExp() : {} {
+  Exp() ( <VIRGULA> Exp() )*
+}
+
+// FUNC -> "fun" TIPO ID "(" LISTAARG? ")" "{" VARDECL SEQCOMANDOS "}" FUNC'
+void Func() : {} {
+  <FUN> Tipo() <ID> <APARENTESES> (ListaArg())? <FPARENTESES> <ACHAVES> (VarDecl() SeqComandos())? <FCHAVES> (FuncLinha())?
+}
+
+// FuncLinha permite a definição de várias funções
+void FuncLinha() : {} {
+  (<FUN> Tipo() <ID> <APARENTESES> (ListaArg())? <FPARENTESES> <ACHAVES> VarDecl() SeqComandos() <FCHAVES> FuncLinha())?
+}
+
+// LISTAARG -> TIPO ID ("," TIPO ID)*
+void ListaArg() : {} {
+  Tipo() <ID> ( <VIRGULA> Tipo() <ID> )*
 }

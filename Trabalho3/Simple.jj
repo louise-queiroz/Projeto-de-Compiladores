@@ -85,19 +85,19 @@ void VarDeclRest() : {} {
   (<NEWVAR> Tipo() <ID> <PONTOVIRGULA> VarDeclRest())?
 }
 
+
 // TIPO -> "float" | "boolean" | "void"
 void Tipo() : {} {
   <FLOAT> | <BOOLEAN> | <VOID>
 }
 
 // SEQCOMANDOS -> COMANDO SEQCOMANDOS | vazio
-void SeqComandos() : {} {
-  Comando() (SeqComandosRest())
+void SeqComandos() : {
+} {
+  (Comando() SeqComandos())?
 }
 
-void SeqComandosRest() : {} {
-  (Comando())?
-}
+
 
 // COMANDO -> TOKEN_id COMANDO'
 //    | "if" "(" EXP ")" "then" "{" SEQCOMANDOS "}" ";"
@@ -106,22 +106,23 @@ void SeqComandosRest() : {} {
 //    | "return" EXP ";" 
 //    | "printOut" "(" EXP ")" ";"
 void Comando() : {} {
-    <ID> ComandoLinha1()
-  | <IF> <APARENTESES> Exp() <FPARENTESES> <THEN> <ACHAVES> SeqComandos() <FCHAVES> <PONTOVIRGULA>
-  | <WHILE> <APARENTESES> Exp() <FPARENTESES> <ACHAVES> SeqComandos() <FCHAVES> <PONTOVIRGULA>
+  <ID> ComandoLinha1()
+  | <IF> Exp() <THEN> <ACHAVES> SeqComandos() <FCHAVES> <PONTOVIRGULA>
+  | <WHILE> Exp() <ACHAVES> SeqComandos() <FCHAVES> <PONTOVIRGULA>
   | <RETURN> Exp() <PONTOVIRGULA>
-  | <PRINTOUT> <APARENTESES> Exp() <FPARENTESES> <PONTOVIRGULA>
+  | <PRINTOUT> Exp() <PONTOVIRGULA>
 }
 
 void ComandoLinha1() : {} {
-   <APARENTESES> (ListaExp())? <FPARENTESES> <PONTOVIRGULA> 
-| <IGUAL> ComandoLinha2()
+ <IGUAL> ComandoLinha2()
+| <APARENTESES> (ListaExp())? <FPARENTESES> <PONTOVIRGULA>
 }
 
 void ComandoLinha2() : {} {
   Exp() <PONTOVIRGULA>
-| <READINPUT> <APARENTESES> <FPARENTESES> <PONTOVIRGULA>
+  | <READINPUT> <APARENTESES> <FPARENTESES> <PONTOVIRGULA>
 }
+
 
 // EXP -> "(" EXP OP EXP ")" | FATOR
 void Exp() : {} {
@@ -159,7 +160,7 @@ void Func() : {} {
 }
 
 void FuncRest() : {} {
-  (Func())?
+  (<FUN> Tipo() <ID> <APARENTESES> (ListaArg())? <FPARENTESES> <ACHAVES> (Vardecl() SeqComandos())? <FCHAVES> FuncRest())?
 }
 
 // LISTAARG -> TIPO TOKEN_id ("," TIPO TOKEN_id)*

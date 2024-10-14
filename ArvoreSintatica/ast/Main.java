@@ -16,10 +16,10 @@ public class Main {
         StringBuilder sb = new StringBuilder();
         sb.append("void main() {\n");
         for (VarDecl var : vars) {
-            sb.append(var.toString());
+            sb.append(var.toString()).append("\n");
         }
         for (Comando cmd : comandos) {
-            sb.append(cmd.toString());
+            sb.append(cmd.toString()).append("\n");
         }
         sb.append("}\n");
         return sb.toString();

@@ -4,13 +4,20 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class Karloff implements KarloffConstants {
+     ArrayList seqComandos; // Declare sem o tipo genérico
+
+    // Construtor da classe Karloff
+    public Karloff() {
+        seqComandos = new ArrayList(); // Inicialize o ArrayList aqui
+    }
+
     public static void main(String[] args) throws Exception {
         if (args.length == 0) {
             System.out.println("Por favor, forne\u00e7a o caminho do arquivo .kar como argumento.");
             return;
         }
-
         FileInputStream fs = new FileInputStream(new File(args[0]));
         Karloff parser = new Karloff(fs);
         Prog arvore = parser.Karloff(); // Chama o método correto para parsear
@@ -47,10 +54,13 @@ public class Karloff implements KarloffConstants {
     }
 
   static final public Prog Karloff() throws ParseException {
-    Prog prog;
-    prog = Main();
-    jj_consume_token(0);
-        {if (true) return prog;}
+    ArrayList<VarDecl> vardecls;
+    ArrayList<Comando> comandos;
+    vardecls = Vardecl();
+    // Chamando a função que coleta as declarações de variáveis
+        comandos = SeqComandos();
+        // Retorna um novo objeto Prog, que deve incluir o Main
+        {if (true) return new Prog(new Main(vardecls, comandos), new ArrayList<Fun>());}
     throw new Error("Missing return statement in function");
   }
 
@@ -65,8 +75,8 @@ public class Karloff implements KarloffConstants {
     vardecls = Vardecl();
     comandos = SeqComandos();
     jj_consume_token(FCHAVES);
-        {if (true) return new Main(vardecls, comandos);} // Corrige a instância para Main
-
+        // Retorna um novo objeto Prog, incluindo o Main e uma lista vazia de funções
+        {if (true) return new Prog(new Main(vardecls, comandos), new ArrayList<Fun>());}
     throw new Error("Missing return statement in function");
   }
 
@@ -91,12 +101,10 @@ public class Karloff implements KarloffConstants {
       cmd = Comando();
         comandos.add(cmd);
     }
-        {if (true) return comandos;} // Retorna a lista de comandos
-
+        {if (true) return comandos;}
     throw new Error("Missing return statement in function");
   }
 
-// VARDECL -> "newVar" TIPO ID ";" VARDECL | vazio
   static final public ArrayList<VarDecl> Vardecl() throws ParseException {
     ArrayList<VarDecl> decls = new ArrayList<VarDecl>();
     String tipo;
@@ -118,12 +126,10 @@ public class Karloff implements KarloffConstants {
         decls.add(new VarDecl(tipo, id.image));
       Vardecl();
     }
-        {if (true) return decls;} // Retorna a lista de declarações
-
+        {if (true) return decls;}
     throw new Error("Missing return statement in function");
   }
 
-// TIPO -> "float" | "boolean" | "void"
   static final public String Tipo() throws ParseException {
     Token tipo;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -147,20 +153,16 @@ public class Karloff implements KarloffConstants {
     throw new Error("Missing return statement in function");
   }
 
-// COMANDO -> TOKEN_id COMANDO'
-//    | "if" "(" EXP ")" "then" "{" SEQCOMANDOS "}" ";"
-//    | "while" "(" EXP ")" "{" SEQCOMANDOS "}" ";"
-//    | "repeat" "{" SEQCOMANDOS "}" "until" "(" EXP ")" ";"
-//    | "return" EXP ";"
-//    | "printOut" "(" EXP ")" ";"
   static final public Comando Comando() throws ParseException {
-    Comando cmd;
-    Exp exp;
+    Comando cmd = null;
+    Exp exp = null;
     Token id;
+    ArrayList<Comando> seqComandos;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case ID:
       id = jj_consume_token(ID);
       ComandoLinha1();
+        cmd = new CAtribuicao(0, id.image, null);
         {if (true) return cmd;}
       break;
     case IF:
@@ -170,12 +172,9 @@ public class Karloff implements KarloffConstants {
       jj_consume_token(FPARENTESES);
       jj_consume_token(THEN);
       jj_consume_token(ACHAVES);
-      SeqComandos();
+      seqComandos = SeqComandos();
       jj_consume_token(FCHAVES);
-      jj_consume_token(PONTOVIRGULA);
-        // Corrigido para garantir que SeqComandos retorna uma lista de comandos
-        List<Comando> seqComandos = SeqComandos();
-        cmd = new CIf(0, exp, seqComandos); // Ajustado
+        cmd = new CIf(0, exp, seqComandos);
         {if (true) return cmd;}
       break;
     case WHILE:
@@ -184,19 +183,16 @@ public class Karloff implements KarloffConstants {
       exp = Exp();
       jj_consume_token(FPARENTESES);
       jj_consume_token(ACHAVES);
-      SeqComandos();
+      seqComandos = SeqComandos();
       jj_consume_token(FCHAVES);
-      jj_consume_token(PONTOVIRGULA);
-        // Similar para while
-        List<Comando> seqComandos = SeqComandos();
-        cmd = new CWhile(0, exp, seqComandos); // Ajustado
+        cmd = new CWhile(0, exp, seqComandos);
         {if (true) return cmd;}
       break;
     case RETURN:
       jj_consume_token(RETURN);
       exp = Exp();
       jj_consume_token(PONTOVIRGULA);
-        cmd = new CReturn(0, exp); // Ajustado para incluir linha
+        cmd = new CReturn(0, exp);
         {if (true) return cmd;}
       break;
     case PRINTOUT:
@@ -205,7 +201,7 @@ public class Karloff implements KarloffConstants {
       exp = Exp();
       jj_consume_token(FPARENTESES);
       jj_consume_token(PONTOVIRGULA);
-        cmd = new CPrint(0, exp); // Ajuste para incluir linha
+        cmd = new CPrint(0, exp);
         {if (true) return cmd;}
       break;
     case READINPUT:
@@ -213,7 +209,7 @@ public class Karloff implements KarloffConstants {
       jj_consume_token(APARENTESES);
       jj_consume_token(FPARENTESES);
       jj_consume_token(PONTOVIRGULA);
-        cmd = new CReadInput(0, "entrada"); // Ajuste para incluir linha
+        cmd = new CReadInput(0, "entrada");
         {if (true) return cmd;}
       break;
     default:
@@ -224,14 +220,12 @@ public class Karloff implements KarloffConstants {
     throw new Error("Missing return statement in function");
   }
 
-// COMANDO' -> ";"
-//            | COMANDO
   static final public Comando ComandoLinha1() throws ParseException {
-    Comando cmd;
+    Comando cmd = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case PONTOVIRGULA:
       jj_consume_token(PONTOVIRGULA);
-                     {if (true) return new CAtribuicao(0, id.image, exp);}
+                     {if (true) return cmd;}
       break;
     case PRINTOUT:
     case IF:
@@ -250,7 +244,6 @@ public class Karloff implements KarloffConstants {
     throw new Error("Missing return statement in function");
   }
 
-// EXP -> "(" EXP OP EXP ")" | FATOR
   static final public Exp Exp() throws ParseException {
     Exp exp1, exp2;
     String op;
@@ -261,16 +254,12 @@ public class Karloff implements KarloffConstants {
       op = Op();
       exp2 = Exp();
       jj_consume_token(FPARENTESES);
-                                                                      // Adiciona parênteses
-        {if (true) return new EOpExp(exp1, op, exp2);} // Certifique-se de que o tipo é correto
-
+        {if (true) return new EOpExp(op, exp1, exp2);}
       break;
-    case TRUE:
-    case FALSE:
     case ID:
     case NUM:
-      Fator();
-        {if (true) return Fator();}
+      exp1 = Fator();
+        {if (true) return exp1;}
       break;
     default:
       jj_la1[5] = jj_gen;
@@ -280,36 +269,6 @@ public class Karloff implements KarloffConstants {
     throw new Error("Missing return statement in function");
   }
 
-// FATOR -> ID | NUM | "true" | "false"
-  static final public Exp Fator() throws ParseException {
-    Token id;
-    Token num;
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case ID:
-      id = jj_consume_token(ID);
-                {if (true) return new EVar(id.image);}
-      break;
-    case NUM:
-      num = jj_consume_token(NUM);
-                  {if (true) return new EFloat(Float.parseFloat(num.image));}
-      break;
-    case TRUE:
-      jj_consume_token(TRUE);
-             {if (true) return new ETrue();}
-      break;
-    case FALSE:
-      jj_consume_token(FALSE);
-              {if (true) return new EFalse();}
-      break;
-    default:
-      jj_la1[6] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
-    }
-    throw new Error("Missing return statement in function");
-  }
-
-// OP -> "+" | "-" | "*" | "/" | "&" | "|" | "<" | ">" | "=="
   static final public String Op() throws ParseException {
     Token op;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -329,25 +288,25 @@ public class Karloff implements KarloffConstants {
       op = jj_consume_token(DIVISAO);
                      {if (true) return "/";}
       break;
-    case AND:
-      op = jj_consume_token(AND);
-                 {if (true) return "&";}
+    default:
+      jj_la1[6] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+    throw new Error("Missing return statement in function");
+  }
+
+  static final public Exp Fator() throws ParseException {
+    Exp exp;
+    Token num, id;
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case NUM:
+      num = jj_consume_token(NUM);
+                  {if (true) return new EFloat(Float.parseFloat(num.image));}
       break;
-    case OU:
-      op = jj_consume_token(OU);
-                {if (true) return "|";}
-      break;
-    case MENOR:
-      op = jj_consume_token(MENOR);
-                   {if (true) return "<";}
-      break;
-    case MAIOR:
-      op = jj_consume_token(MAIOR);
-                   {if (true) return ">";}
-      break;
-    case IGUALA:
-      op = jj_consume_token(IGUALA);
-                    {if (true) return "==";}
+    case ID:
+      id = jj_consume_token(ID);
+                {if (true) return new EVar(id.image);}
       break;
     default:
       jj_la1[7] = jj_gen;
@@ -375,10 +334,10 @@ public class Karloff implements KarloffConstants {
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x3a8000,0x10000,0x6040,0x3a8000,0x3a8800,0xc00200,0xc00000,0xff000000,};
+      jj_la1_0 = new int[] {0x3a8000,0x10000,0x6040,0x3a8000,0x3a8800,0x200,0xf000000,0x0,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x8,0x0,0x0,0x8,0x8,0x18,0x18,0x1,};
+      jj_la1_1 = new int[] {0x8,0x0,0x0,0x8,0x8,0x18,0x0,0x18,};
    }
 
   /** Constructor with InputStream. */

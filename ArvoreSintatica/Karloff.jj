@@ -106,29 +106,34 @@ TOKEN :
 
 Prog Karloff() :
 {
-    Prog prog;
+    ArrayList<VarDecl> vardecls;
+    ArrayList<Comando> comandos;
 }
 {
-    prog = Main() <EOF>
+    vardecls = Vardecl() // Chamando a função que coleta as declarações de variáveis
+    comandos = SeqComandos() // Chamando a função que coleta os comandos
     {
-        return prog;
+        // Retorna um novo objeto Prog, que deve incluir o Main
+        return new Prog(new Main(vardecls, comandos), new ArrayList<Fun>()); 
     }
 }
 
 Prog Main() :
 {
     ArrayList<VarDecl> vardecls = new ArrayList<VarDecl>();
-    ArrayList<Comando> comandos = new ArrayList<Comando>(); // Mudança para ArrayList
+    ArrayList<Comando> comandos = new ArrayList<Comando>();
 }
 {
     <VOID> <MAIN> <APARENTESES> <FPARENTESES> <ACHAVES>
     vardecls = Vardecl()
-    comandos = SeqComandos() // Chama SeqComandos para capturar os comandos
+    comandos = SeqComandos() 
     <FCHAVES>
     {
-        return new Main(vardecls, comandos); // Corrige a instância para Main
+        // Retorna um novo objeto Prog, incluindo o Main e uma lista vazia de funções
+        return new Prog(new Main(vardecls, comandos), new ArrayList<Fun>());
     }
 }
+
 ArrayList<Comando> SeqComandos() :
 {
     ArrayList<Comando> comandos = new ArrayList<Comando>();
@@ -137,13 +142,12 @@ ArrayList<Comando> SeqComandos() :
 {
     (cmd = Comando() { 
         comandos.add(cmd); 
-    })* // Capturando comandos e os adicionando à lista
+    })*
     { 
-        return comandos; // Retorna a lista de comandos
+        return comandos;
     }
 }
 
-// VARDECL -> "newVar" TIPO ID ";" VARDECL | vazio
 ArrayList<VarDecl> Vardecl() :
 {
     ArrayList<VarDecl> decls = new ArrayList<VarDecl>();
@@ -153,13 +157,12 @@ ArrayList<VarDecl> Vardecl() :
 {
     ( <NEWVAR> tipo = Tipo() id = <ID> <PONTOVIRGULA> { 
         decls.add(new VarDecl(tipo, id.image)); 
-    } Vardecl() )* // Chama Vardecl recursivamente
+    } Vardecl() )*
     {
-        return decls; // Retorna a lista de declarações
+        return decls;
     }
 }
 
-// TIPO -> "float" | "boolean" | "void"
 String Tipo() :
 {
     Token tipo;
@@ -172,68 +175,47 @@ String Tipo() :
     tipo = <VOID> { return "void"; }
 }
 
-// COMANDO -> TOKEN_id COMANDO'
-//    | "if" "(" EXP ")" "then" "{" SEQCOMANDOS "}" ";"
-//    | "while" "(" EXP ")" "{" SEQCOMANDOS "}" ";"
-//    | "repeat" "{" SEQCOMANDOS "}" "until" "(" EXP ")" ";"
-//    | "return" EXP ";"
-//    | "printOut" "(" EXP ")" ";"
 Comando Comando() :
 {
-    Comando cmd = null; // Inicializa como null
+    Comando cmd = null;
     Exp exp = null;
     Token id;
-    ArrayList<Comando> seqComandos; // Declara a lista de comandos aqui
+    ArrayList<Comando> seqComandos;
 }
 {
-    // Atribuição
     id = <ID> ComandoLinha1() {
-        cmd = new CAtribuicao(0, id.image, null);
+        cmd = new CAtribuicao(0, id.image, null); 
         return cmd;
     }
 |
-    // If
     <IF> <APARENTESES> exp = Exp() <FPARENTESES> <THEN> <ACHAVES>
-    {
-        seqComandos = SeqComandos(); // Chama SeqComandos
-        <FCHAVES> {
-            cmd = new CIf(0, exp, seqComandos); // Usa seqComandos
-            return cmd;
-        }
+    seqComandos = SeqComandos() <FCHAVES> {
+        cmd = new CIf(0, exp, seqComandos);
+        return cmd;
     }
 |
-    // While
     <WHILE> <APARENTESES> exp = Exp() <FPARENTESES> <ACHAVES>
-    {
-        seqComandos = SeqComandos(); // Chama SeqComandos
-        <FCHAVES> {
-            cmd = new CWhile(0, exp, seqComandos); // Usa seqComandos
-            return cmd;
-        }
-    }
-|
-    // Return
-    <RETURN> exp = Exp() {
-        cmd = new CReturn(0, exp); // Ajustado para incluir linha
+    seqComandos = SeqComandos() <FCHAVES> {
+        cmd = new CWhile(0, exp, seqComandos);
         return cmd;
     }
 |
-    // PrintOut
-    <PRINTOUT> <APARENTESES> exp = Exp() <FPARENTESES> {
-        cmd = new CPrint(0, exp); // Ajuste para incluir linha
+    <RETURN> exp = Exp() <PONTOVIRGULA> {
+        cmd = new CReturn(0, exp); 
         return cmd;
     }
 |
-    // ReadInput
-    <READINPUT> <APARENTESES> <FPARENTESES> {
-        cmd = new CReadInput(0, "entrada"); // Ajuste para incluir linha
+    <PRINTOUT> <APARENTESES> exp = Exp() <FPARENTESES> <PONTOVIRGULA> {
+        cmd = new CPrint(0, exp);
+        return cmd;
+    }
+|
+    <READINPUT> <APARENTESES> <FPARENTESES> <PONTOVIRGULA> {
+        cmd = new CReadInput(0, "entrada");
         return cmd;
     }
 }
 
-
-// COMANDO' -> ";"
-//            | COMANDO
 Comando ComandoLinha1() :
 {
     Comando cmd = null;
@@ -244,51 +226,42 @@ Comando ComandoLinha1() :
     Comando() { return cmd; }
 }
 
-// EXP -> "(" EXP OP EXP ")" | FATOR
 Exp Exp() :
 {
     Exp exp1, exp2;
     String op;
 }
 {
-    <APARENTESES> exp1 = Exp() op = Op() exp2 = Exp() <FPARENTESES> { // Adiciona parênteses
-        return new EOpExp(exp1, op, exp2); // Certifique-se de que o tipo é correto
+    <APARENTESES> exp1 = Exp() op = Op() exp2 = Exp() <FPARENTESES> {
+        return new EOpExp(op, exp1, exp2);
     }
 |
-    Fator() {
-        return Fator();
+    exp1 = Fator() {
+        return exp1;
     }
 }
 
-// FATOR -> ID | NUM | "true" | "false"
-Exp Fator() :
-{
-    Token id;
-    Token num;
-}
-{
-    id = <ID> { return new EVar(id.image); }
-|
-    num = <NUM> { return new EFloat(Float.parseFloat(num.image)); }
-|
-    <TRUE> { return new ETrue(); }
-|
-    <FALSE> { return new EFalse(); }
-}
-
-// OP -> "+" | "-" | "*" | "/" | "&" | "|" | "<" | ">" | "=="
 String Op() :
 {
     Token op;
 }
 {
     op = <SOMA> { return "+"; }
-|   op = <SUBTRACAO> { return "-"; }
-|   op = <MULTIPLICACAO> { return "*"; }
-|   op = <DIVISAO> { return "/"; }
-|   op = <AND> { return "&"; }
-|   op = <OU> { return "|"; }
-|   op = <MENOR> { return "<"; }
-|   op = <MAIOR> { return ">"; }
-|   op = <IGUALA> { return "=="; }
+|
+    op = <SUBTRACAO> { return "-"; }
+|
+    op = <MULTIPLICACAO> { return "*"; }
+|
+    op = <DIVISAO> { return "/"; }
+}
+
+Exp Fator() :
+{
+    Exp exp;
+    Token num, id;
+}
+{
+    num = <NUM> { return new EFloat(Float.parseFloat(num.image)); }
+|
+    id = <ID> { return new EVar(id.image); }
 }

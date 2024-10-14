@@ -1,0 +1,10 @@
+newVar float x;
+newVar float y;
+main() {
+    x = 10.0;
+    y = x + 5.0;
+    printOut(x);
+    if (y > 5) {
+        printOut(y);
+    }
+}

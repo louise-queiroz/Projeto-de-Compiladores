@@ -10,6 +10,8 @@ public class Main {
         this.vars = vars;
         this.comandos = comandos;
     }
+
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

@@ -3,8 +3,8 @@ package ast;
 import java.util.ArrayList;
 
 public class Prog {
-    public Main main; // Programa principal
-    public ArrayList<Fun> fun; // Lista de definições de funções
+    public Main main; 
+    public ArrayList<Fun> fun;
 
     public Prog(Main main, ArrayList<Fun> fun) {
         this.main = main;

@@ -1,0 +1,20 @@
+// Programa para calcular o fatorial de um número
+newVar float num;
+newVar float result;
+
+num = 5.0; // Número para o qual queremos calcular o fatorial
+
+result = fatorial(num); // Chamada da função fatorial
+printOut(result); // Imprime o resultado
+
+// Função para calcular o fatorial
+fun fatorial(float n) {
+    newVar float res;
+    
+    if (n == 0.0) {
+        return 1.0; // Caso base: 0! = 1
+    } else {
+        res = n * fatorial(n - 1.0); // Chamada recursiva
+        return res; // Retorna o resultado
+    }
+}

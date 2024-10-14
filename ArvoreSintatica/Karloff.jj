@@ -21,7 +21,7 @@ public class Karloff {
         arvoreString = arvore.toString();
         caminho = caminho.replace(".kar", ".c");
 
-        System.out.println(arvoreString);
+        System.out.println("Conteúdo gerado para o arquivo C: " + arvoreString);
 
         arquivo = new File("saida/" + caminho);
         try {
@@ -103,6 +103,16 @@ Prog Karloff() :
     vardecls = Vardecl() 
     comandos = SeqComandos() 
     {
+       System.out.println("PROG Número de variáveis: " + vardecls.size());
+      System.out.println("PROG Número de comandos: " + comandos.size());
+
+  // Debug para verificar as variáveis e comandos coletados
+        for (VarDecl var : vardecls) {
+            System.out.println("Variável: " + var);
+        }
+        for (Comando cmd : comandos) {
+            System.out.println("Comando: " + cmd);
+        }
         return new Prog(new Main(vardecls, comandos), new ArrayList<Fun>());
     }
 }
@@ -118,6 +128,8 @@ Main Main() :
     comandos = SeqComandos() 
     <FCHAVES>
     {
+        System.out.println("Dentro de Main - Número de variáveis: " + vardecls.size());
+        System.out.println("Dentro de Main - Número de comandos: " + comandos.size());
         return new Main(vardecls, comandos);
     }
 }
@@ -144,12 +156,15 @@ ArrayList<VarDecl> Vardecl() :
 }
 {
     ( <NEWVAR> tipo = Tipo() id = <ID> <PONTOVIRGULA> { 
-        decls.add(new VarDecl(tipo, id.image)); 
-    } Vardecl() )*
+        System.out.println("Nova variável declarada: tipo=" + tipo + ", id=" + id.image);
+
+        decls.add(new VarDecl(tipo, id.image));
+    } )*
     {
         return decls;
     }
 }
+
 
 String Tipo() :
 {
@@ -168,53 +183,50 @@ Comando Comando() :
     Comando cmd = null;
     Exp exp = null;
     Token id;
-    ArrayList<Comando> seqComandos;
+    ArrayList<Comando> seqComandos = new ArrayList<Comando>();
 }
 {
-    id = <ID> ComandoLinha1() {
-        // Atribuição
-        cmd = new CAtribuicao(0, id.image, null); 
+    // Atribuição
+    id = <ID> <IGUAL> exp = Exp() <PONTOVIRGULA> {
+        cmd = new CAtribuicao(0, id.image, exp); // Atribuição
+        System.out.println("Comando de atribuição: id=" + id.image + ", exp=" + exp);
         return cmd;
     }
     |
     <IF> <APARENTESES> exp = Exp() <FPARENTESES> <THEN> <ACHAVES>
     {
-        seqComandos = SeqComandos();  // Chame SeqComandos
-    }
-    {
-        // Comando IF
+        seqComandos = SeqComandos(); 
+
         cmd = new CIf(0, exp, seqComandos);
         return cmd;
     }
     |
     <WHILE> <APARENTESES> exp = Exp() <FPARENTESES> <ACHAVES>
     {
-        seqComandos = SeqComandos();  // Chame SeqComandos
-    }
-    {
-        // Comando WHILE
+        seqComandos = SeqComandos(); 
+        System.out.println("Comando WHILE: exp=" + exp);
         cmd = new CWhile(0, exp, seqComandos);
         return cmd;
     }
     |
     <RETURN> exp = Exp() <PONTOVIRGULA> {
-        // Comando RETURN
-        cmd = new CReturn(0, exp); 
+        cmd = new CReturn(0, exp);
+        System.out.println("Comando RETURN: exp=" + exp);
         return cmd;
     }
     |
     <PRINTOUT> <APARENTESES> exp = Exp() <FPARENTESES> <PONTOVIRGULA> {
-        // Comando PRINT
         cmd = new CPrint(0, exp);
+        System.out.println("Comando PRINTOUT: exp=" + exp);
         return cmd;
     }
     |
     <READINPUT> <APARENTESES> <FPARENTESES> <PONTOVIRGULA> {
-        // Comando de Leitura
         cmd = new CReadInput(0, "entrada");
         return cmd;
     }
 }
+
 
 Comando ComandoLinha1() :
 {
@@ -247,12 +259,18 @@ String Op() :
 }
 {
     op = <SOMA> { return "+"; }
-|
+| 
     op = <SUBTRACAO> { return "-"; }
-|
+| 
     op = <MULTIPLICACAO> { return "*"; }
-|
+| 
     op = <DIVISAO> { return "/"; }
+| 
+    op = <MENOR> { return "<"; } // adicionar comparação se necessário
+| 
+    op = <MAIOR> { return ">"; }
+| 
+    op = <IGUALA> { return "=="; } // adicionar comparação se necessário
 }
 
 Exp Fator() :

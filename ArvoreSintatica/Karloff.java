@@ -20,7 +20,7 @@ public class Karloff implements KarloffConstants {
         arvoreString = arvore.toString();
         caminho = caminho.replace(".kar", ".c");
 
-        System.out.println(arvoreString);
+        System.out.println("Conte\u00fado gerado para o arquivo C: " + arvoreString);
 
         arquivo = new File("saida/" + caminho);
         try {
@@ -47,6 +47,16 @@ public class Karloff implements KarloffConstants {
     ArrayList<Comando> comandos;
     vardecls = Vardecl();
     comandos = SeqComandos();
+       System.out.println("PROG N\u00famero de vari\u00e1veis: " + vardecls.size());
+      System.out.println("PROG N\u00famero de comandos: " + comandos.size());
+
+  // Debug para verificar as variáveis e comandos coletados
+        for (VarDecl var : vardecls) {
+            System.out.println("Vari\u00e1vel: " + var);
+        }
+        for (Comando cmd : comandos) {
+            System.out.println("Comando: " + cmd);
+        }
         {if (true) return new Prog(new Main(vardecls, comandos), new ArrayList<Fun>());}
     throw new Error("Missing return statement in function");
   }
@@ -62,6 +72,8 @@ public class Karloff implements KarloffConstants {
     vardecls = Vardecl();
     comandos = SeqComandos();
     jj_consume_token(FCHAVES);
+        System.out.println("Dentro de Main - N\u00famero de vari\u00e1veis: " + vardecls.size());
+        System.out.println("Dentro de Main - N\u00famero de comandos: " + comandos.size());
         {if (true) return new Main(vardecls, comandos);}
     throw new Error("Missing return statement in function");
   }
@@ -110,8 +122,9 @@ public class Karloff implements KarloffConstants {
       tipo = Tipo();
       id = jj_consume_token(ID);
       jj_consume_token(PONTOVIRGULA);
+        System.out.println("Nova vari\u00e1vel declarada: tipo=" + tipo + ", id=" + id.image);
+
         decls.add(new VarDecl(tipo, id.image));
-      Vardecl();
     }
         {if (true) return decls;}
     throw new Error("Missing return statement in function");
@@ -144,13 +157,16 @@ public class Karloff implements KarloffConstants {
     Comando cmd = null;
     Exp exp = null;
     Token id;
-    ArrayList<Comando> seqComandos;
+    ArrayList<Comando> seqComandos = new ArrayList<Comando>();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case ID:
-      id = jj_consume_token(ID);
-      ComandoLinha1();
-        // Atribuição
-        cmd = new CAtribuicao(0, id.image, null);
+      // Atribuição
+          id = jj_consume_token(ID);
+      jj_consume_token(IGUAL);
+      exp = Exp();
+      jj_consume_token(PONTOVIRGULA);
+        cmd = new CAtribuicao(0, id.image, exp); // Atribuição
+        System.out.println("Comando de atribui\u00e7\u00e3o: id=" + id.image + ", exp=" + exp);
         {if (true) return cmd;}
       break;
     case IF:
@@ -160,9 +176,8 @@ public class Karloff implements KarloffConstants {
       jj_consume_token(FPARENTESES);
       jj_consume_token(THEN);
       jj_consume_token(ACHAVES);
-        seqComandos = SeqComandos();  // Chame SeqComandos
+        seqComandos = SeqComandos();
 
-        // Comando IF
         cmd = new CIf(0, exp, seqComandos);
         {if (true) return cmd;}
       break;
@@ -172,9 +187,8 @@ public class Karloff implements KarloffConstants {
       exp = Exp();
       jj_consume_token(FPARENTESES);
       jj_consume_token(ACHAVES);
-        seqComandos = SeqComandos();  // Chame SeqComandos
-
-        // Comando WHILE
+        seqComandos = SeqComandos();
+        System.out.println("Comando WHILE: exp=" + exp);
         cmd = new CWhile(0, exp, seqComandos);
         {if (true) return cmd;}
       break;
@@ -182,8 +196,8 @@ public class Karloff implements KarloffConstants {
       jj_consume_token(RETURN);
       exp = Exp();
       jj_consume_token(PONTOVIRGULA);
-        // Comando RETURN
         cmd = new CReturn(0, exp);
+        System.out.println("Comando RETURN: exp=" + exp);
         {if (true) return cmd;}
       break;
     case PRINTOUT:
@@ -192,8 +206,8 @@ public class Karloff implements KarloffConstants {
       exp = Exp();
       jj_consume_token(FPARENTESES);
       jj_consume_token(PONTOVIRGULA);
-        // Comando PRINT
         cmd = new CPrint(0, exp);
+        System.out.println("Comando PRINTOUT: exp=" + exp);
         {if (true) return cmd;}
       break;
     case READINPUT:
@@ -201,7 +215,6 @@ public class Karloff implements KarloffConstants {
       jj_consume_token(APARENTESES);
       jj_consume_token(FPARENTESES);
       jj_consume_token(PONTOVIRGULA);
-        // Comando de Leitura
         cmd = new CReadInput(0, "entrada");
         {if (true) return cmd;}
       break;
@@ -281,6 +294,18 @@ public class Karloff implements KarloffConstants {
       op = jj_consume_token(DIVISAO);
                      {if (true) return "/";}
       break;
+    case MENOR:
+      op = jj_consume_token(MENOR);
+                   {if (true) return "<";}
+      break;
+    case MAIOR:
+      op = jj_consume_token(MAIOR);
+                   {if (true) return ">";}
+      break;
+    case IGUALA:
+      op = jj_consume_token(IGUALA);
+                    {if (true) return "==";}
+      break;
     default:
       jj_la1[6] = jj_gen;
       jj_consume_token(-1);
@@ -327,10 +352,10 @@ public class Karloff implements KarloffConstants {
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x3a8000,0x10000,0x6040,0x3a8000,0x3a8800,0x200,0xf000000,0x0,};
+      jj_la1_0 = new int[] {0x3a8000,0x10000,0x6040,0x3a8000,0x3a8800,0x200,0xcf000000,0x0,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x8,0x0,0x0,0x8,0x8,0x18,0x0,0x18,};
+      jj_la1_1 = new int[] {0x8,0x0,0x0,0x8,0x8,0x18,0x1,0x18,};
    }
 
   /** Constructor with InputStream. */

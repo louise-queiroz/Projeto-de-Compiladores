@@ -3,7 +3,7 @@ import java.io.*;
 public class Karloff {
 
   public static void main(String args[]) throws ParseException,IOException {
-    
+
  Karloff analisador = new Karloff(new FileInputStream(args[0]));
  analisador.Karloff();
   }

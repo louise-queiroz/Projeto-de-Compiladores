@@ -9,16 +9,8 @@ public class CPrint extends Comando {
         this.exp = exp;
     }
 
-    public Exp getExp() {
-        return exp;
-    }
-
-    public int getLinha() {
-        return linha;
-    }
-
     @Override
     public String toString() {
-        return "Linha " + linha + ": System.output(" + exp.toString() + ");\n";
+        return "printf(\"%f\\n\", " + exp.toString() + ");\n"; // Para imprimir float
     }
 }

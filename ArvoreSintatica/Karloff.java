@@ -4,78 +4,48 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Karloff implements KarloffConstants {
-     ArrayList seqComandos; // Declare sem o tipo genérico
+  public static void main(String args[]) throws Exception {
+    FileInputStream file = new FileInputStream(new File(args[0]));
+    Karloff parser = new Karloff(file);
+    Prog arvore = parser.Karloff();
+    gerarCodigo(arvore, args[0]);
+  }
 
-    // Construtor da classe Karloff
-    public Karloff() {
-        seqComandos = new ArrayList(); // Inicialize o ArrayList aqui
-    }
+  public static void gerarCodigo(Prog arvore, String caminho) {
+    String arvoreString;
+    File arquivo;
+    FileOutputStream saida = null;
 
-    public static void main(String[] args) throws Exception {
-        if (args.length == 0) {
-            System.out.println("Por favor, forne\u00e7a o caminho do arquivo .kar como argumento.");
-            return;
-        }
-        FileInputStream fs = new FileInputStream(new File(args[0]));
-        Karloff parser = new Karloff(fs);
-        Prog arvore = parser.Karloff(); // Chama o método correto para parsear
-        gerarCodigo(arvore, args[0]); // Corrige a chamada para gerarCodigo
-    }
+    arvoreString = arvore.toString();
+    caminho = caminho.replace(".kar", ".c");
 
-    public static void gerarCodigo(Prog arvore, String caminho) { // Corrige o tipo do parâmetro
-        String arvoreString;
-        File arquivo;
-        FileOutputStream saida = null;
+    System.out.println(arvoreString);
 
-        arvoreString = arvore.toString();
-        caminho = caminho.replace(".kar", ".c");
-
-        System.out.println(arvoreString); // Corrigido para imprimir no console
-
-        arquivo = new File("saida/" + caminho);
+    arquivo = new File("saida/" + caminho);
+    try {
+      arquivo.getParentFile().mkdirs();
+      arquivo.createNewFile();
+      saida = new FileOutputStream(arquivo);
+      saida.write(arvoreString.getBytes());
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      if (saida != null) {
         try {
-            arquivo.getParentFile().mkdirs(); // Garante que o diretório de saída existe
-            arquivo.createNewFile();
-            saida = new FileOutputStream(arquivo);
-            saida.write(arvoreString.getBytes()); // Escreve a árvore sintática no arquivo
+          saida.close();
         } catch (IOException e) {
-            e.printStackTrace(); // Adiciona tratamento de exceção
-        } finally {
-            if (saida != null) {
-                try {
-                    saida.close(); // Fecha o fluxo de saída
-                } catch (IOException e) {
-                    e.printStackTrace(); // Adiciona tratamento de exceção
-                }
-            }
+          e.printStackTrace();
         }
+      }
     }
+  }
 
   static final public Prog Karloff() throws ParseException {
     ArrayList<VarDecl> vardecls;
     ArrayList<Comando> comandos;
     vardecls = Vardecl();
-    // Chamando a função que coleta as declarações de variáveis
-        comandos = SeqComandos();
-        // Retorna um novo objeto Prog, que deve incluir o Main
-        {if (true) return new Prog(new Main(vardecls, comandos), new ArrayList<Fun>());}
-    throw new Error("Missing return statement in function");
-  }
-
-  static final public Prog Main() throws ParseException {
-    ArrayList<VarDecl> vardecls = new ArrayList<VarDecl>();
-    ArrayList<Comando> comandos = new ArrayList<Comando>();
-    jj_consume_token(VOID);
-    jj_consume_token(MAIN);
-    jj_consume_token(APARENTESES);
-    jj_consume_token(FPARENTESES);
-    jj_consume_token(ACHAVES);
-    vardecls = Vardecl();
     comandos = SeqComandos();
-    jj_consume_token(FCHAVES);
-        // Retorna um novo objeto Prog, incluindo o Main e uma lista vazia de funções
         {if (true) return new Prog(new Main(vardecls, comandos), new ArrayList<Fun>());}
     throw new Error("Missing return statement in function");
   }
@@ -162,6 +132,7 @@ public class Karloff implements KarloffConstants {
     case ID:
       id = jj_consume_token(ID);
       ComandoLinha1();
+        // Atribuição
         cmd = new CAtribuicao(0, id.image, null);
         {if (true) return cmd;}
       break;
@@ -174,6 +145,7 @@ public class Karloff implements KarloffConstants {
       jj_consume_token(ACHAVES);
       seqComandos = SeqComandos();
       jj_consume_token(FCHAVES);
+        // Comando IF
         cmd = new CIf(0, exp, seqComandos);
         {if (true) return cmd;}
       break;
@@ -185,6 +157,7 @@ public class Karloff implements KarloffConstants {
       jj_consume_token(ACHAVES);
       seqComandos = SeqComandos();
       jj_consume_token(FCHAVES);
+        // Comando WHILE
         cmd = new CWhile(0, exp, seqComandos);
         {if (true) return cmd;}
       break;
@@ -192,6 +165,7 @@ public class Karloff implements KarloffConstants {
       jj_consume_token(RETURN);
       exp = Exp();
       jj_consume_token(PONTOVIRGULA);
+        // Comando RETURN
         cmd = new CReturn(0, exp);
         {if (true) return cmd;}
       break;
@@ -201,6 +175,7 @@ public class Karloff implements KarloffConstants {
       exp = Exp();
       jj_consume_token(FPARENTESES);
       jj_consume_token(PONTOVIRGULA);
+        // Comando PRINT
         cmd = new CPrint(0, exp);
         {if (true) return cmd;}
       break;
@@ -209,6 +184,7 @@ public class Karloff implements KarloffConstants {
       jj_consume_token(APARENTESES);
       jj_consume_token(FPARENTESES);
       jj_consume_token(PONTOVIRGULA);
+        // Comando de Leitura
         cmd = new CReadInput(0, "entrada");
         {if (true) return cmd;}
       break;

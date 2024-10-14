@@ -1,12 +1,12 @@
 package ast;
 
 public class ParamFormalFun {
-    public String tipo;
-    public String nome;
+    public String tipo; // Tipo do parâmetro
+    public String nome; // Nome do parâmetro
 
     public ParamFormalFun(String tipo, String nome) {
-        this.tipo = tipo;
-        this.nome = nome;
+        this.tipo = tipo; // Inicializa o tipo
+        this.nome = nome; // Inicializa o nome
     }
 
     @Override

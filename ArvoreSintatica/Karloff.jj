@@ -1,57 +1,46 @@
 PARSER_BEGIN(Karloff)
+
 import ast.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Karloff {
-     ArrayList seqComandos; // Declare sem o tipo genérico
+  public static void main(String args[]) throws Exception {  
+    FileInputStream file = new FileInputStream(new File(args[0]));
+    Karloff parser = new Karloff(file);
+    Prog arvore = parser.Karloff();
+    gerarCodigo(arvore, args[0]);
+  }
 
-    // Construtor da classe Karloff
-    public Karloff() {
-        seqComandos = new ArrayList(); // Inicialize o ArrayList aqui
-    }
+  public static void gerarCodigo(Prog arvore, String caminho) {
+    String arvoreString;
+    File arquivo;
+    FileOutputStream saida = null;
 
-    public static void main(String[] args) throws Exception {
-        if (args.length == 0) {
-            System.out.println("Por favor, forneça o caminho do arquivo .kar como argumento.");
-            return;
-        }
-        FileInputStream fs = new FileInputStream(new File(args[0]));
-        Karloff parser = new Karloff(fs);
-        Prog arvore = parser.Karloff(); // Chama o método correto para parsear
-        gerarCodigo(arvore, args[0]); // Corrige a chamada para gerarCodigo
-    }
+    arvoreString = arvore.toString();
+    caminho = caminho.replace(".kar", ".c");
 
-    public static void gerarCodigo(Prog arvore, String caminho) { // Corrige o tipo do parâmetro
-        String arvoreString;
-        File arquivo;
-        FileOutputStream saida = null;
+    System.out.println(arvoreString);
 
-        arvoreString = arvore.toString();
-        caminho = caminho.replace(".kar", ".c");
-
-        System.out.println(arvoreString); // Corrigido para imprimir no console
-
-        arquivo = new File("saida/" + caminho);
+    arquivo = new File("saida/" + caminho);
+    try {
+      arquivo.getParentFile().mkdirs();
+      arquivo.createNewFile();
+      saida = new FileOutputStream(arquivo);
+      saida.write(arvoreString.getBytes());
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      if (saida != null) {
         try {
-            arquivo.getParentFile().mkdirs(); // Garante que o diretório de saída existe
-            arquivo.createNewFile();
-            saida = new FileOutputStream(arquivo);
-            saida.write(arvoreString.getBytes()); // Escreve a árvore sintática no arquivo
+          saida.close();
         } catch (IOException e) {
-            e.printStackTrace(); // Adiciona tratamento de exceção
-        } finally {
-            if (saida != null) {
-                try {
-                    saida.close(); // Fecha o fluxo de saída
-                } catch (IOException e) {
-                    e.printStackTrace(); // Adiciona tratamento de exceção
-                }
-            }
+          e.printStackTrace();
         }
+      }
     }
+  }
 }
 
 PARSER_END(Karloff)
@@ -95,13 +84,13 @@ TOKEN :
 | <MAIOR: ">">
 | <IGUALA: "==">
 | <VIRGULA: ",">
-| <FUN: "fun"> 
+| <FUN: "fun">
 }
 
 TOKEN :
 {
     <ID: ["a"-"z", "A"-"Z"] (["a"-"z", "A"-"Z", "0"-"9"])* ("_" (["a"-"z", "A"-"Z", "0"-"9"])+)* >
-|  < NUM: (["0"-"9"])+ ("." (["0"-"9"])+)? (["e", "E"] (["+", "-"])? (["0"-"9"])+)? >
+|  <NUM: (["0"-"9"])+ ("." (["0"-"9"])+)? (["e", "E"] (["+", "-"])? (["0"-"9"])+)? >
 }
 
 Prog Karloff() :
@@ -110,26 +99,9 @@ Prog Karloff() :
     ArrayList<Comando> comandos;
 }
 {
-    vardecls = Vardecl() // Chamando a função que coleta as declarações de variáveis
-    comandos = SeqComandos() // Chamando a função que coleta os comandos
-    {
-        // Retorna um novo objeto Prog, que deve incluir o Main
-        return new Prog(new Main(vardecls, comandos), new ArrayList<Fun>()); 
-    }
-}
-
-Prog Main() :
-{
-    ArrayList<VarDecl> vardecls = new ArrayList<VarDecl>();
-    ArrayList<Comando> comandos = new ArrayList<Comando>();
-}
-{
-    <VOID> <MAIN> <APARENTESES> <FPARENTESES> <ACHAVES>
-    vardecls = Vardecl()
+    vardecls = Vardecl() 
     comandos = SeqComandos() 
-    <FCHAVES>
     {
-        // Retorna um novo objeto Prog, incluindo o Main e uma lista vazia de funções
         return new Prog(new Main(vardecls, comandos), new ArrayList<Fun>());
     }
 }
@@ -163,6 +135,7 @@ ArrayList<VarDecl> Vardecl() :
     }
 }
 
+
 String Tipo() :
 {
     Token tipo;
@@ -184,38 +157,43 @@ Comando Comando() :
 }
 {
     id = <ID> ComandoLinha1() {
+        // Atribuição
         cmd = new CAtribuicao(0, id.image, null); 
         return cmd;
     }
-|
+    |
     <IF> <APARENTESES> exp = Exp() <FPARENTESES> <THEN> <ACHAVES>
     seqComandos = SeqComandos() <FCHAVES> {
+        // Comando IF
         cmd = new CIf(0, exp, seqComandos);
         return cmd;
     }
-|
+    |
     <WHILE> <APARENTESES> exp = Exp() <FPARENTESES> <ACHAVES>
     seqComandos = SeqComandos() <FCHAVES> {
+        // Comando WHILE
         cmd = new CWhile(0, exp, seqComandos);
         return cmd;
     }
-|
+    |
     <RETURN> exp = Exp() <PONTOVIRGULA> {
+        // Comando RETURN
         cmd = new CReturn(0, exp); 
         return cmd;
     }
-|
+    |
     <PRINTOUT> <APARENTESES> exp = Exp() <FPARENTESES> <PONTOVIRGULA> {
+        // Comando PRINT
         cmd = new CPrint(0, exp);
         return cmd;
     }
-|
+    |
     <READINPUT> <APARENTESES> <FPARENTESES> <PONTOVIRGULA> {
+        // Comando de Leitura
         cmd = new CReadInput(0, "entrada");
         return cmd;
     }
 }
-
 Comando ComandoLinha1() :
 {
     Comando cmd = null;
@@ -235,7 +213,7 @@ Exp Exp() :
     <APARENTESES> exp1 = Exp() op = Op() exp2 = Exp() <FPARENTESES> {
         return new EOpExp(op, exp1, exp2);
     }
-|
+    |
     exp1 = Fator() {
         return exp1;
     }

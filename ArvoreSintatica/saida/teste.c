@@ -1,5 +1,2 @@
-void main() {
-newVar float x;
-
+int main() {
 }
-

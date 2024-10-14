@@ -11,20 +11,10 @@ public class CAtribuicao extends Comando {
         this.exp = exp;
     }
 
-    public String getVar() {
-        return var;
-    }
-
-    public Exp getExp() {
-        return exp;
-    }
-
-    public int getLinha() {
-        return linha;
-    }
-
     @Override
     public String toString() {
-        return "Linha " + linha + ": " + var + " = " + exp.toString() + ";\n";
+        return var + " = " + exp.toString() + ";\n";
     }
 }
+
+

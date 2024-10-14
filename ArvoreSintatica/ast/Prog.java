@@ -3,8 +3,8 @@ package ast;
 import java.util.ArrayList;
 
 public class Prog {
-    public Main main;                   // Atributo para o programa principal
-    public ArrayList<Fun> fun;          // Lista de funções do programa
+    public Main main; // Programa principal
+    public ArrayList<Fun> fun; // Lista de definições de funções
 
     public Prog(Main main, ArrayList<Fun> fun) {
         this.main = main;
@@ -14,15 +14,10 @@ public class Prog {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        
-        // Adiciona a representação do main
-        sb.append(main.toString()).append("\n");
-        
-        // Adiciona a representação de cada função
+        sb.append(main.toString());
         for (Fun func : fun) {
-            sb.append(func.toString()).append("\n");
+            sb.append(func.toString());
         }
-        
-        return sb.toString(); // Retorna a string formatada do programa
+        return sb.toString();
     }
 }

@@ -1,11 +1,8 @@
 package ast;
 
-public class ETrue extends Exp {
-    public ETrue() {
-    }
-
+class ETrue extends Exp {
     @Override
     public String toString() {
-        return "true";
+        return "1"; // Em C, true é representado como 1
     }
 }

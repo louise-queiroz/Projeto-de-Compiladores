@@ -13,22 +13,10 @@ public class CWhile extends Comando {
         this.bloco = bloco;
     }
 
-    public Exp getExp() {
-        return exp;
-    }
-
-    public ArrayList<Comando> getBloco() {
-        return bloco;
-    }
-
-    public int getLinha() {
-        return linha;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Linha ").append(linha).append(": while (").append(exp.toString()).append(") {\n");
+        sb.append("while (" + exp.toString() + ") {\n");
         for (Comando cmd : bloco) {
             sb.append(cmd.toString());
         }

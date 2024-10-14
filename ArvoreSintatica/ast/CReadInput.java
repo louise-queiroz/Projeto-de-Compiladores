@@ -9,16 +9,8 @@ public class CReadInput extends Comando {
         this.var = var;
     }
 
-    public String getVar() {
-        return var;
-    }
-
-    public int getLinha() {
-        return linha;
-    }
-
     @Override
     public String toString() {
-        return "Linha " + linha + ": " + var + " = System.readint();\n";
+        return "scanf(\"%f\", &" + var + ");\n"; // Para ler float
     }
 }

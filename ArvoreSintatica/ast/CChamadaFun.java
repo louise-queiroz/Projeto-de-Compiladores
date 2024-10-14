@@ -13,20 +13,17 @@ public class CChamadaFun extends Comando {
         this.args = args;
     }
 
-    public String getFun() {
-        return fun;
-    }
-
-    public ArrayList<Exp> getArgs() {
-        return args;
-    }
-
-    public int getLinha() {
-        return linha;
-    }
-
     @Override
     public String toString() {
-        return "Linha " + linha + ": " + fun + "(" + args.toString() + ");\n";
+        StringBuilder sb = new StringBuilder();
+        sb.append(fun + "(");
+        for (int i = 0; i < args.size(); i++) {
+            sb.append(args.get(i).toString());
+            if (i < args.size() - 1) {
+                sb.append(", ");
+            }
+        }
+        sb.append(");\n");
+        return sb.toString();
     }
 }

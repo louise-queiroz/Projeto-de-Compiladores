@@ -16,7 +16,7 @@ public class Fun {
         this.vars = vars;
         this.body = body;
     }
-
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

@@ -7,9 +7,6 @@ public class EVar extends Exp {
         this.var = var;
     }
 
-    public String getVar() {
-        return var;
-    }
 
     @Override
     public String toString() {

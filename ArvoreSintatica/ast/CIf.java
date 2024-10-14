@@ -12,23 +12,10 @@ public class CIf extends Comando {
         this.exp = exp;
         this.bloco = bloco;
     }
-
-    public Exp getExp() {
-        return exp;
-    }
-
-    public ArrayList<Comando> getBloco() {
-        return bloco;
-    }
-
-    public int getLinha() {
-        return linha;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Linha ").append(linha).append(": if (").append(exp.toString()).append(") then {\n");
+        sb.append("if (" + exp.toString() + ") {\n");
         for (Comando cmd : bloco) {
             sb.append(cmd.toString());
         }

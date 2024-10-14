@@ -10,16 +10,15 @@ public class Main {
         this.vars = vars;
         this.comandos = comandos;
     }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("void main() {\n");
+        sb.append("int main() {\n");
         for (VarDecl var : vars) {
-            sb.append(var.toString()).append("\n");
+            sb.append(var.toString());
         }
-        for (Comando cmd : comandos) {
-            sb.append(cmd.toString()).append("\n");
+        for (Comando com : comandos) {
+            sb.append(com.toString());
         }
         sb.append("}\n");
         return sb.toString();

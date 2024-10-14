@@ -7,10 +7,6 @@ public class EFloat extends Exp {
         this.value = value;
     }
 
-    public float getValue() {
-        return value;
-    }
-
     @Override
     public String toString() {
         return String.valueOf(value);

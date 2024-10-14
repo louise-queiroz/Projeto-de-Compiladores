@@ -11,18 +11,6 @@ public class EOpExp extends Exp {
         this.arg2 = arg2;
     }
 
-    public String getOp() {
-        return op;
-    }
-
-    public Exp getArg1() {
-        return arg1;
-    }
-
-    public Exp getArg2() {
-        return arg2;
-    }
-
     @Override
     public String toString() {
         return "(" + arg1.toString() + " " + op + " " + arg2.toString() + ")";

@@ -9,16 +9,8 @@ public class CReturn extends Comando {
         this.exp = exp;
     }
 
-    public Exp getExp() {
-        return exp;
-    }
-
-    public int getLinha() {
-        return linha;
-    }
-
     @Override
     public String toString() {
-        return "Linha " + linha + ": return " + exp.toString() + ";\n";
+        return "return " + exp.toString() + ";\n";
     }
 }

@@ -5,19 +5,19 @@ void main() {
     newVar float next;
     newVar float i;
 
-    limit = 20.0;  // Limite até onde imprimir a sequência
-    a = 0.0;  // Primeiro número da sequência
-    b = 1.0;  // Segundo número da sequência
+    limit = 20.0;  
+    a = 0.0; 
+    b = 1.0;  
 
-    printOut a;  // Imprime o primeiro número
-    printOut b;  // Imprime o segundo número
+    printOut a; 
+    printOut b;  
 
-    i = 2.0;  // Começa a contagem a partir do terceiro número
+    i = 2.0; 
     while (i < limit) {  
-        next = a + b;  // Próximo número na sequência
-        printOut next;  // Imprime o próximo número
-        a = b;  // Atualiza a para b
-        b = next;  // Atualiza b para o próximo número
-        i = i + 1.0;  // Incrementa i
+        next = a + b;  
+        printOut next;
+        a = b; 
+        b = next;  
+        i = i + 1.0;  
     }
 }

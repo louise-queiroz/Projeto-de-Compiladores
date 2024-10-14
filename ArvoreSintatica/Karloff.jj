@@ -96,27 +96,25 @@ TOKEN :
 // Nova regra para o programa principal
 Prog Karloff() :
 {
-    ArrayList<VarDecl> vardecls;
-    ArrayList<Comando> comandos;
+    Main main = null;
+    ArrayList<VarDecl> vardecls = new ArrayList<VarDecl>();
+    ArrayList<Comando> comandos = new ArrayList<Comando>();
 }
 {
-    vardecls = Vardecl() 
-    comandos = SeqComandos() 
+    (
+      main = Main()
+    |
+      vardecls = Vardecl() 
+      comandos = SeqComandos()
+    )
     {
-       System.out.println("PROG Número de variáveis: " + vardecls.size());
-      System.out.println("PROG Número de comandos: " + comandos.size());
-
-  // Debug para verificar as variáveis e comandos coletados
-        for (VarDecl var : vardecls) {
-            System.out.println("Variável: " + var);
+        if (main == null) {
+            System.out.println("Programa sem main explícito.");
+            main = new Main(vardecls, comandos);
         }
-        for (Comando cmd : comandos) {
-            System.out.println("Comando: " + cmd);
-        }
-        return new Prog(new Main(vardecls, comandos), new ArrayList<Fun>());
+        return new Prog(main, new ArrayList<Fun>());
     }
 }
-
 Main Main() :
 {
     ArrayList<VarDecl> vardecls;
@@ -124,8 +122,8 @@ Main Main() :
 }
 {
     <VOID> <MAIN> <APARENTESES> <FPARENTESES> <ACHAVES>
-    vardecls = Vardecl() 
-    comandos = SeqComandos() 
+    vardecls = Vardecl()
+    comandos = SeqComandos()
     <FCHAVES>
     {
         System.out.println("Dentro de Main - Número de variáveis: " + vardecls.size());
@@ -194,9 +192,22 @@ Comando Comando() :
         return cmd;
     }
     |
+    LOOKAHEAD(3) <PRINTOUT> <APARENTESES> exp = Exp() <FPARENTESES> <PONTOVIRGULA> {
+        cmd = new CPrint(0, exp);
+        System.out.println("Comando PRINTOUT: exp=" + exp);
+        return cmd;
+    }
+    |
+    LOOKAHEAD(3) <PRINTOUT> id = <ID> <PONTOVIRGULA> {
+        exp = new EVar(id.image);
+        cmd = new CPrint(0, exp);
+        System.out.println("Comando PRINTOUT: var=" + id.image);
+        return cmd;
+    }
+    |
     <IF> <APARENTESES> exp = Exp() <FPARENTESES> <THEN> <ACHAVES>
     {
-        seqComandos = SeqComandos(); 
+        seqComandos = SeqComandos();
 
         cmd = new CIf(0, exp, seqComandos);
         return cmd;
@@ -204,7 +215,7 @@ Comando Comando() :
     |
     <WHILE> <APARENTESES> exp = Exp() <FPARENTESES> <ACHAVES>
     {
-        seqComandos = SeqComandos(); 
+        seqComandos = SeqComandos();
         System.out.println("Comando WHILE: exp=" + exp);
         cmd = new CWhile(0, exp, seqComandos);
         return cmd;
@@ -216,19 +227,11 @@ Comando Comando() :
         return cmd;
     }
     |
-    <PRINTOUT> <APARENTESES> exp = Exp() <FPARENTESES> <PONTOVIRGULA> {
-        cmd = new CPrint(0, exp);
-        System.out.println("Comando PRINTOUT: exp=" + exp);
-        return cmd;
-    }
-    |
     <READINPUT> <APARENTESES> <FPARENTESES> <PONTOVIRGULA> {
         cmd = new CReadInput(0, "entrada");
         return cmd;
     }
 }
-
-
 Comando ComandoLinha1() :
 {
     Comando cmd = null;

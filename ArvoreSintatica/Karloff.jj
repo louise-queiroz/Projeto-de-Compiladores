@@ -6,41 +6,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Karloff {
-  public static void main(String args[]) throws Exception {  
-    FileInputStream file = new FileInputStream(new File(args[0]));
-    Karloff parser = new Karloff(file);
-    Prog arvore = parser.Karloff();
-    gerarCodigo(arvore, args[0]);
-  }
-
-  public static void gerarCodigo(Prog arvore, String caminho) {
-    String arvoreString;
-    File arquivo;
-    FileOutputStream saida = null;
-
-    arvoreString = arvore.toString();
-    caminho = caminho.replace(".kar", ".c");
-
-    System.out.println(arvoreString);
-
-    arquivo = new File("saida/" + caminho);
-    try {
-      arquivo.getParentFile().mkdirs();
-      arquivo.createNewFile();
-      saida = new FileOutputStream(arquivo);
-      saida.write(arvoreString.getBytes());
-    } catch (IOException e) {
-      e.printStackTrace();
-    } finally {
-      if (saida != null) {
-        try {
-          saida.close();
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
+    public static void main(String args[]) throws Exception {
+        FileInputStream file = new FileInputStream(new File(args[0]));
+        Karloff parser = new Karloff(file);
+        Prog arvore = parser.Karloff();
+        gerarCodigo(arvore, args[0]);
     }
-  }
+
+    public static void gerarCodigo(Prog arvore, String caminho) {
+        String arvoreString;
+        File arquivo;
+        FileOutputStream saida = null;
+
+        arvoreString = arvore.toString();
+        caminho = caminho.replace(".kar", ".c");
+
+        System.out.println(arvoreString);
+
+        arquivo = new File("saida/" + caminho);
+        try {
+            arquivo.getParentFile().mkdirs();
+            arquivo.createNewFile();
+            saida = new FileOutputStream(arquivo);
+            saida.write(arvoreString.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (saida != null) {
+                try {
+                    saida.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }
 
 PARSER_END(Karloff)
@@ -93,6 +93,7 @@ TOKEN :
 |  <NUM: (["0"-"9"])+ ("." (["0"-"9"])+)? (["e", "E"] (["+", "-"])? (["0"-"9"])+)? >
 }
 
+// Nova regra para o programa principal
 Prog Karloff() :
 {
     ArrayList<VarDecl> vardecls;
@@ -106,17 +107,32 @@ Prog Karloff() :
     }
 }
 
+Main Main() :
+{
+    ArrayList<VarDecl> vardecls;
+    ArrayList<Comando> comandos;
+}
+{
+    <VOID> <MAIN> <APARENTESES> <FPARENTESES> <ACHAVES>
+    vardecls = Vardecl() 
+    comandos = SeqComandos() 
+    <FCHAVES>
+    {
+        return new Main(vardecls, comandos);
+    }
+}
+
 ArrayList<Comando> SeqComandos() :
 {
     ArrayList<Comando> comandos = new ArrayList<Comando>();
     Comando cmd;
 }
 {
-    (cmd = Comando() { 
-        comandos.add(cmd); 
+    (cmd = Comando() {
+        comandos.add(cmd);
     })*
     { 
-        return comandos;
+        return comandos;  // Retorna os comandos coletados
     }
 }
 
@@ -134,7 +150,6 @@ ArrayList<VarDecl> Vardecl() :
         return decls;
     }
 }
-
 
 String Tipo() :
 {
@@ -163,14 +178,20 @@ Comando Comando() :
     }
     |
     <IF> <APARENTESES> exp = Exp() <FPARENTESES> <THEN> <ACHAVES>
-    seqComandos = SeqComandos() <FCHAVES> {
+    {
+        seqComandos = SeqComandos();  // Chame SeqComandos
+    }
+    {
         // Comando IF
         cmd = new CIf(0, exp, seqComandos);
         return cmd;
     }
     |
     <WHILE> <APARENTESES> exp = Exp() <FPARENTESES> <ACHAVES>
-    seqComandos = SeqComandos() <FCHAVES> {
+    {
+        seqComandos = SeqComandos();  // Chame SeqComandos
+    }
+    {
         // Comando WHILE
         cmd = new CWhile(0, exp, seqComandos);
         return cmd;
@@ -194,6 +215,7 @@ Comando Comando() :
         return cmd;
     }
 }
+
 Comando ComandoLinha1() :
 {
     Comando cmd = null;

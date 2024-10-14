@@ -5,48 +5,64 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Karloff implements KarloffConstants {
-  public static void main(String args[]) throws Exception {
-    FileInputStream file = new FileInputStream(new File(args[0]));
-    Karloff parser = new Karloff(file);
-    Prog arvore = parser.Karloff();
-    gerarCodigo(arvore, args[0]);
-  }
-
-  public static void gerarCodigo(Prog arvore, String caminho) {
-    String arvoreString;
-    File arquivo;
-    FileOutputStream saida = null;
-
-    arvoreString = arvore.toString();
-    caminho = caminho.replace(".kar", ".c");
-
-    System.out.println(arvoreString);
-
-    arquivo = new File("saida/" + caminho);
-    try {
-      arquivo.getParentFile().mkdirs();
-      arquivo.createNewFile();
-      saida = new FileOutputStream(arquivo);
-      saida.write(arvoreString.getBytes());
-    } catch (IOException e) {
-      e.printStackTrace();
-    } finally {
-      if (saida != null) {
-        try {
-          saida.close();
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
+    public static void main(String args[]) throws Exception {
+        FileInputStream file = new FileInputStream(new File(args[0]));
+        Karloff parser = new Karloff(file);
+        Prog arvore = parser.Karloff();
+        gerarCodigo(arvore, args[0]);
     }
-  }
 
+    public static void gerarCodigo(Prog arvore, String caminho) {
+        String arvoreString;
+        File arquivo;
+        FileOutputStream saida = null;
+
+        arvoreString = arvore.toString();
+        caminho = caminho.replace(".kar", ".c");
+
+        System.out.println(arvoreString);
+
+        arquivo = new File("saida/" + caminho);
+        try {
+            arquivo.getParentFile().mkdirs();
+            arquivo.createNewFile();
+            saida = new FileOutputStream(arquivo);
+            saida.write(arvoreString.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (saida != null) {
+                try {
+                    saida.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+// Nova regra para o programa principal
   static final public Prog Karloff() throws ParseException {
     ArrayList<VarDecl> vardecls;
     ArrayList<Comando> comandos;
     vardecls = Vardecl();
     comandos = SeqComandos();
         {if (true) return new Prog(new Main(vardecls, comandos), new ArrayList<Fun>());}
+    throw new Error("Missing return statement in function");
+  }
+
+  static final public Main Main() throws ParseException {
+    ArrayList<VarDecl> vardecls;
+    ArrayList<Comando> comandos;
+    jj_consume_token(VOID);
+    jj_consume_token(MAIN);
+    jj_consume_token(APARENTESES);
+    jj_consume_token(FPARENTESES);
+    jj_consume_token(ACHAVES);
+    vardecls = Vardecl();
+    comandos = SeqComandos();
+    jj_consume_token(FCHAVES);
+        {if (true) return new Main(vardecls, comandos);}
     throw new Error("Missing return statement in function");
   }
 
@@ -71,7 +87,8 @@ public class Karloff implements KarloffConstants {
       cmd = Comando();
         comandos.add(cmd);
     }
-        {if (true) return comandos;}
+        {if (true) return comandos;}  // Retorna os comandos coletados
+
     throw new Error("Missing return statement in function");
   }
 
@@ -143,8 +160,8 @@ public class Karloff implements KarloffConstants {
       jj_consume_token(FPARENTESES);
       jj_consume_token(THEN);
       jj_consume_token(ACHAVES);
-      seqComandos = SeqComandos();
-      jj_consume_token(FCHAVES);
+        seqComandos = SeqComandos();  // Chame SeqComandos
+
         // Comando IF
         cmd = new CIf(0, exp, seqComandos);
         {if (true) return cmd;}
@@ -155,8 +172,8 @@ public class Karloff implements KarloffConstants {
       exp = Exp();
       jj_consume_token(FPARENTESES);
       jj_consume_token(ACHAVES);
-      seqComandos = SeqComandos();
-      jj_consume_token(FCHAVES);
+        seqComandos = SeqComandos();  // Chame SeqComandos
+
         // Comando WHILE
         cmd = new CWhile(0, exp, seqComandos);
         {if (true) return cmd;}

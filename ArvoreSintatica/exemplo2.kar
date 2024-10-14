@@ -1,20 +1,23 @@
-// Programa para calcular o fatorial de um número
-newVar float num;
-newVar float result;
+void main() {
+    newVar float limit;
+    newVar float a;
+    newVar float b;
+    newVar float next;
+    newVar float i;
 
-num = 5.0; // Número para o qual queremos calcular o fatorial
+    limit = 20.0;  // Limite até onde imprimir a sequência
+    a = 0.0;  // Primeiro número da sequência
+    b = 1.0;  // Segundo número da sequência
 
-result = fatorial(num); // Chamada da função fatorial
-printOut(result); // Imprime o resultado
+    printOut a;  // Imprime o primeiro número
+    printOut b;  // Imprime o segundo número
 
-// Função para calcular o fatorial
-fun fatorial(float n) {
-    newVar float res;
-    
-    if (n == 0.0) {
-        return 1.0; // Caso base: 0! = 1
-    } else {
-        res = n * fatorial(n - 1.0); // Chamada recursiva
-        return res; // Retorna o resultado
+    i = 2.0;  // Começa a contagem a partir do terceiro número
+    while (i < limit) {  
+        next = a + b;  // Próximo número na sequência
+        printOut next;  // Imprime o próximo número
+        a = b;  // Atualiza a para b
+        b = next;  // Atualiza b para o próximo número
+        i = i + 1.0;  // Incrementa i
     }
 }

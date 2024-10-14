@@ -253,25 +253,28 @@ public class Karloff implements KarloffConstants {
   static final public Exp Exp() throws ParseException {
     Exp exp1, exp2;
     String op;
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case APARENTESES:
-      jj_consume_token(APARENTESES);
-      exp1 = Exp();
+    exp1 = Fator();
+    label_3:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case SOMA:
+      case SUBTRACAO:
+      case MULTIPLICACAO:
+      case DIVISAO:
+      case MENOR:
+      case MAIOR:
+      case IGUALA:
+        ;
+        break;
+      default:
+        jj_la1[5] = jj_gen;
+        break label_3;
+      }
       op = Op();
-      exp2 = Exp();
-      jj_consume_token(FPARENTESES);
-        {if (true) return new EOpExp(op, exp1, exp2);}
-      break;
-    case ID:
-    case NUM:
-      exp1 = Fator();
-        {if (true) return exp1;}
-      break;
-    default:
-      jj_la1[5] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
+      exp2 = Fator();
+            exp1 = new EOpExp(op, exp1, exp2);
     }
+        {if (true) return exp1;}
     throw new Error("Missing return statement in function");
   }
 
@@ -352,10 +355,10 @@ public class Karloff implements KarloffConstants {
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x3a8000,0x10000,0x6040,0x3a8000,0x3a8800,0x200,0xcf000000,0x0,};
+      jj_la1_0 = new int[] {0x3a8000,0x10000,0x6040,0x3a8000,0x3a8800,0xcf000000,0xcf000000,0x0,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x8,0x0,0x0,0x8,0x8,0x18,0x1,0x18,};
+      jj_la1_1 = new int[] {0x8,0x0,0x0,0x8,0x8,0x1,0x1,0x18,};
    }
 
   /** Constructor with InputStream. */

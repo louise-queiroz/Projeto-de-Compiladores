@@ -134,6 +134,7 @@ Main Main() :
     }
 }
 
+
 ArrayList<Comando> SeqComandos() :
 {
     ArrayList<Comando> comandos = new ArrayList<Comando>();
@@ -244,14 +245,18 @@ Exp Exp() :
     String op;
 }
 {
-    <APARENTESES> exp1 = Exp() op = Op() exp2 = Exp() <FPARENTESES> {
-        return new EOpExp(op, exp1, exp2);
-    }
-    |
-    exp1 = Fator() {
+    exp1 = Fator() 
+    (
+        op = Op() exp2 = Fator() {
+            exp1 = new EOpExp(op, exp1, exp2);
+        }
+    )*
+    {
         return exp1;
     }
 }
+
+
 
 String Op() :
 {

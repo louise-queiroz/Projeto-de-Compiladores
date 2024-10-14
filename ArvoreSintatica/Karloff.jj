@@ -1,0 +1,294 @@
+PARSER_BEGIN(Karloff)
+import ast.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+
+public class Karloff {
+     ArrayList seqComandos; // Declare sem o tipo genérico
+
+    // Construtor da classe Karloff
+    public Karloff() {
+        seqComandos = new ArrayList(); // Inicialize o ArrayList aqui
+    }
+
+    public static void main(String[] args) throws Exception {
+        if (args.length == 0) {
+            System.out.println("Por favor, forneça o caminho do arquivo .kar como argumento.");
+            return;
+        }
+        FileInputStream fs = new FileInputStream(new File(args[0]));
+        Karloff parser = new Karloff(fs);
+        Prog arvore = parser.Karloff(); // Chama o método correto para parsear
+        gerarCodigo(arvore, args[0]); // Corrige a chamada para gerarCodigo
+    }
+
+    public static void gerarCodigo(Prog arvore, String caminho) { // Corrige o tipo do parâmetro
+        String arvoreString;
+        File arquivo;
+        FileOutputStream saida = null;
+
+        arvoreString = arvore.toString();
+        caminho = caminho.replace(".kar", ".c");
+
+        System.out.println(arvoreString); // Corrigido para imprimir no console
+
+        arquivo = new File("saida/" + caminho);
+        try {
+            arquivo.getParentFile().mkdirs(); // Garante que o diretório de saída existe
+            arquivo.createNewFile();
+            saida = new FileOutputStream(arquivo);
+            saida.write(arvoreString.getBytes()); // Escreve a árvore sintática no arquivo
+        } catch (IOException e) {
+            e.printStackTrace(); // Adiciona tratamento de exceção
+        } finally {
+            if (saida != null) {
+                try {
+                    saida.close(); // Fecha o fluxo de saída
+                } catch (IOException e) {
+                    e.printStackTrace(); // Adiciona tratamento de exceção
+                }
+            }
+        }
+    }
+}
+
+PARSER_END(Karloff)
+
+SKIP :
+{
+    " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+    <MAIN: "main">
+| <VOID: "void">
+| <ACHAVES: "{">
+| <FCHAVES: "}">
+| <APARENTESES: "(">
+| <FPARENTESES: ")">
+| <PONTOVIRGULA: ";">
+| <IGUAL: "=">
+| <FLOAT: "float">
+| <BOOLEAN: "boolean">
+| <PRINTOUT: "printOut">
+| <NEWVAR: "newVar">
+| <IF: "if">
+| <THEN: "then">
+| <WHILE: "while">
+| <READINPUT: "readInput">
+| <RETURN: "return">
+| <TRUE: "true">
+| <FALSE: "false">
+| <SOMA: "+">
+| <SUBTRACAO: "-">
+| <MULTIPLICACAO: "*">
+| <DIVISAO: "/">
+| <AND: "&">
+| <OU: "|">
+| <MENOR: "<">
+| <MAIOR: ">">
+| <IGUALA: "==">
+| <VIRGULA: ",">
+| <FUN: "fun"> 
+}
+
+TOKEN :
+{
+    <ID: ["a"-"z", "A"-"Z"] (["a"-"z", "A"-"Z", "0"-"9"])* ("_" (["a"-"z", "A"-"Z", "0"-"9"])+)* >
+|  < NUM: (["0"-"9"])+ ("." (["0"-"9"])+)? (["e", "E"] (["+", "-"])? (["0"-"9"])+)? >
+}
+
+Prog Karloff() :
+{
+    Prog prog;
+}
+{
+    prog = Main() <EOF>
+    {
+        return prog;
+    }
+}
+
+Prog Main() :
+{
+    ArrayList<VarDecl> vardecls = new ArrayList<VarDecl>();
+    ArrayList<Comando> comandos = new ArrayList<Comando>(); // Mudança para ArrayList
+}
+{
+    <VOID> <MAIN> <APARENTESES> <FPARENTESES> <ACHAVES>
+    vardecls = Vardecl()
+    comandos = SeqComandos() // Chama SeqComandos para capturar os comandos
+    <FCHAVES>
+    {
+        return new Main(vardecls, comandos); // Corrige a instância para Main
+    }
+}
+ArrayList<Comando> SeqComandos() :
+{
+    ArrayList<Comando> comandos = new ArrayList<Comando>();
+    Comando cmd;
+}
+{
+    (cmd = Comando() { 
+        comandos.add(cmd); 
+    })* // Capturando comandos e os adicionando à lista
+    { 
+        return comandos; // Retorna a lista de comandos
+    }
+}
+
+// VARDECL -> "newVar" TIPO ID ";" VARDECL | vazio
+ArrayList<VarDecl> Vardecl() :
+{
+    ArrayList<VarDecl> decls = new ArrayList<VarDecl>();
+    String tipo;
+    Token id;
+}
+{
+    ( <NEWVAR> tipo = Tipo() id = <ID> <PONTOVIRGULA> { 
+        decls.add(new VarDecl(tipo, id.image)); 
+    } Vardecl() )* // Chama Vardecl recursivamente
+    {
+        return decls; // Retorna a lista de declarações
+    }
+}
+
+// TIPO -> "float" | "boolean" | "void"
+String Tipo() :
+{
+    Token tipo;
+}
+{
+    tipo = <FLOAT> { return "float"; }
+|
+    tipo = <BOOLEAN> { return "boolean"; }
+|
+    tipo = <VOID> { return "void"; }
+}
+
+// COMANDO -> TOKEN_id COMANDO'
+//    | "if" "(" EXP ")" "then" "{" SEQCOMANDOS "}" ";"
+//    | "while" "(" EXP ")" "{" SEQCOMANDOS "}" ";"
+//    | "repeat" "{" SEQCOMANDOS "}" "until" "(" EXP ")" ";"
+//    | "return" EXP ";"
+//    | "printOut" "(" EXP ")" ";"
+Comando Comando() :
+{
+    Comando cmd = null; // Inicializa como null
+    Exp exp = null;
+    Token id;
+    ArrayList<Comando> seqComandos; // Declara a lista de comandos aqui
+}
+{
+    // Atribuição
+    id = <ID> ComandoLinha1() {
+        cmd = new CAtribuicao(0, id.image, null);
+        return cmd;
+    }
+|
+    // If
+    <IF> <APARENTESES> exp = Exp() <FPARENTESES> <THEN> <ACHAVES>
+    {
+        seqComandos = SeqComandos(); // Chama SeqComandos
+        <FCHAVES> {
+            cmd = new CIf(0, exp, seqComandos); // Usa seqComandos
+            return cmd;
+        }
+    }
+|
+    // While
+    <WHILE> <APARENTESES> exp = Exp() <FPARENTESES> <ACHAVES>
+    {
+        seqComandos = SeqComandos(); // Chama SeqComandos
+        <FCHAVES> {
+            cmd = new CWhile(0, exp, seqComandos); // Usa seqComandos
+            return cmd;
+        }
+    }
+|
+    // Return
+    <RETURN> exp = Exp() {
+        cmd = new CReturn(0, exp); // Ajustado para incluir linha
+        return cmd;
+    }
+|
+    // PrintOut
+    <PRINTOUT> <APARENTESES> exp = Exp() <FPARENTESES> {
+        cmd = new CPrint(0, exp); // Ajuste para incluir linha
+        return cmd;
+    }
+|
+    // ReadInput
+    <READINPUT> <APARENTESES> <FPARENTESES> {
+        cmd = new CReadInput(0, "entrada"); // Ajuste para incluir linha
+        return cmd;
+    }
+}
+
+
+// COMANDO' -> ";"
+//            | COMANDO
+Comando ComandoLinha1() :
+{
+    Comando cmd = null;
+}
+{
+    <PONTOVIRGULA> { return cmd; }
+|
+    Comando() { return cmd; }
+}
+
+// EXP -> "(" EXP OP EXP ")" | FATOR
+Exp Exp() :
+{
+    Exp exp1, exp2;
+    String op;
+}
+{
+    <APARENTESES> exp1 = Exp() op = Op() exp2 = Exp() <FPARENTESES> { // Adiciona parênteses
+        return new EOpExp(exp1, op, exp2); // Certifique-se de que o tipo é correto
+    }
+|
+    Fator() {
+        return Fator();
+    }
+}
+
+// FATOR -> ID | NUM | "true" | "false"
+Exp Fator() :
+{
+    Token id;
+    Token num;
+}
+{
+    id = <ID> { return new EVar(id.image); }
+|
+    num = <NUM> { return new EFloat(Float.parseFloat(num.image)); }
+|
+    <TRUE> { return new ETrue(); }
+|
+    <FALSE> { return new EFalse(); }
+}
+
+// OP -> "+" | "-" | "*" | "/" | "&" | "|" | "<" | ">" | "=="
+String Op() :
+{
+    Token op;
+}
+{
+    op = <SOMA> { return "+"; }
+|   op = <SUBTRACAO> { return "-"; }
+|   op = <MULTIPLICACAO> { return "*"; }
+|   op = <DIVISAO> { return "/"; }
+|   op = <AND> { return "&"; }
+|   op = <OU> { return "|"; }
+|   op = <MENOR> { return "<"; }
+|   op = <MAIOR> { return ">"; }
+|   op = <IGUALA> { return "=="; }
+}

@@ -1,0 +1,22 @@
+void main() {
+    newVar float numero;
+    newVar float i;
+    newVar boolean ehPrimo;
+
+    numero = 29.0;
+    i = 2.0;
+    ehPrimo = true;  
+
+    if (numero < 2.0) then {
+        ehPrimo = false;
+    };
+
+    while (i < numero) {
+        if ((numero > i) & (numero < (i + 1.0))) then {
+            ehPrimo = false;
+        };
+        i = (i + 1.0);
+    };
+
+    printOut ehPrimo;
+}

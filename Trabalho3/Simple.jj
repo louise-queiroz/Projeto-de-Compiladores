@@ -1,0 +1,173 @@
+PARSER_BEGIN(Simple)
+import java.io.*;
+public class Simple {
+
+  public static void main(String args[]) throws ParseException,IOException {
+    
+ Simple analisador = new Simple(new FileInputStream(args[0]));
+ analisador.Simple();
+  }
+
+}
+
+PARSER_END(Simple)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+  <MAIN: "main">
+| <VOID: "void">
+| <ACHAVES: "{">
+| <FCHAVES: "}">
+| <APARENTESES: "(">
+| <FPARENTESES: ")">
+| <PONTOVIRGULA: ";">
+| <IGUAL: "=">
+| <FLOAT: "float">
+| <BOOLEAN: "boolean">
+| <PRINTOUT: "printOut">
+| <NEWVAR: "newVar">
+| <IF: "if">
+| <THEN: "then">
+| <WHILE: "while">
+| <READINPUT: "readInput">
+| <RETURN: "return">
+| <TRUE: "true">
+| <FALSE: "false">
+| <SOMA: "+">
+| <SUBTRACAO: "-">
+| <MULTIPLICACAO: "*">
+| <DIVISAO: "/">
+| <AND: "&">
+| <OU: "|">
+| <MENOR: "<">
+| <MAIOR: ">">
+| <IGUALA: "==">
+| <VIRGULA: ",">
+| <FUN: "fun"> 
+}
+
+
+TOKEN :
+{
+  <ID: ["a"-"z", "A"-"Z"] (["a"-"z", "A"-"Z", "0"-"9"])* ("_" (["a"-"z", "A"-"Z", "0"-"9"])+)* >
+|  < NUM: (["0"-"9"])+ ("." (["0"-"9"])+)? (["e", "E"] (["+", "-"])? (["0"-"9"])+)? >
+}
+
+void Simple () :
+{Token t;}
+{
+  Main() (Func())?
+<EOF> 
+}
+
+void Main () :
+{Token t;}
+{
+  <VOID> <MAIN> <APARENTESES> <FPARENTESES> <ACHAVES> Vardecl() SeqComandos() <FCHAVES>
+}
+
+// VARDECL -> "newVar" TIPO TOKEN_id ";" VARDECL | vazio
+void Vardecl() : {
+  Token t;
+} {
+  <NEWVAR> Tipo() <ID> <PONTOVIRGULA> VarDeclRest()
+}
+
+void VarDeclRest() : {} {
+  (<NEWVAR> Tipo() <ID> <PONTOVIRGULA> VarDeclRest())?
+}
+
+
+// TIPO -> "float" | "boolean" | "void"
+void Tipo() : {} {
+  <FLOAT> | <BOOLEAN> | <VOID>
+}
+
+// SEQCOMANDOS -> COMANDO SEQCOMANDOS | vazio
+void SeqComandos() : {
+} {
+  (Comando() SeqComandos())?
+}
+
+
+
+// COMANDO -> TOKEN_id COMANDO'
+//    | "if" "(" EXP ")" "then" "{" SEQCOMANDOS "}" ";"
+//    | "while" "(" EXP ")" "{" SEQCOMANDOS "}" ";"
+//    | "repeat" "{" SEQCOMANDOS "}" "until" "(" EXP ")" ";"
+//    | "return" EXP ";" 
+//    | "printOut" "(" EXP ")" ";"
+void Comando() : {} {
+  <ID> ComandoLinha1()
+  | <IF> Exp() <THEN> <ACHAVES> SeqComandos() <FCHAVES> <PONTOVIRGULA>
+  | <WHILE> Exp() <ACHAVES> SeqComandos() <FCHAVES> <PONTOVIRGULA>
+  | <RETURN> Exp() <PONTOVIRGULA>
+  | <PRINTOUT> Exp() <PONTOVIRGULA>
+}
+
+void ComandoLinha1() : {} {
+ <IGUAL> ComandoLinha2()
+| <APARENTESES> (ListaExp())? <FPARENTESES> <PONTOVIRGULA>
+}
+
+void ComandoLinha2() : {} {
+  Exp() <PONTOVIRGULA>
+  | <READINPUT> <APARENTESES> <FPARENTESES> <PONTOVIRGULA>
+}
+
+
+// EXP -> "(" EXP OP EXP ")" | FATOR
+void Exp() : {} {
+  <APARENTESES> Exp() Op() Exp() <FPARENTESES>
+| Fator()
+}
+
+// FATOR -> TOKEN_id FATOR' | TOKEN_numliteral | "true" | "false"
+// FATOR' -> "(" LISTAEXP? ")" | vazio
+void Fator() : {} {
+  <ID> FatorLinha()
+| <NUM>
+| <TRUE>
+| <FALSE>
+}
+
+void FatorLinha() : {} {
+  ( <APARENTESES> (ListaExp())? <FPARENTESES> )?
+}
+
+// OP -> "+" | "-" | "*" | "/" | "&" | "|" | "<" | ">" | "=="
+void Op() : {} {
+  <SOMA> | <SUBTRACAO> | <MULTIPLICACAO> | <DIVISAO> | <AND> | <OU> | <MENOR> | <MAIOR> | <IGUALA>
+}
+
+// LISTAEXP -> EXP ("," EXP)*
+void ListaExp() : {} {
+  Exp() ( <VIRGULA> Exp() )*
+}
+
+// FUNC -> "fun" TIPO TOKEN_id "(" LISTAARG? ")" "{" VARDECL SEQCOMANDOS "}" FUNC'
+// FUNC' -> "fun" TIPO TOKEN_id "(" LISTAARG? ")" "{" VARDECL SEQCOMANDOS "}" FUNC' | vazio
+void Func() : {} {
+  <FUN> Tipo() <ID> <APARENTESES> (ListaArg())? <FPARENTESES> <ACHAVES> (Vardecl() SeqComandos())? <FCHAVES> FuncRest()
+}
+
+void FuncRest() : {} {
+  (<FUN> Tipo() <ID> <APARENTESES> (ListaArg())? <FPARENTESES> <ACHAVES> (Vardecl() SeqComandos())? <FCHAVES> FuncRest())?
+}
+
+// LISTAARG -> TIPO TOKEN_id ("," TIPO TOKEN_id)*
+void ListaArg() : {} {
+  Tipo() <ID> ( <VIRGULA> Tipo() <ID> )*
+}
+
+void ListaArgRest() : {} {
+  ( <VIRGULA> Tipo() <ID> ListaArgRest() )?
+}

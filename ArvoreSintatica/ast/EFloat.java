@@ -1,0 +1,18 @@
+package ast;
+
+public class EFloat extends Exp {
+    public float value;
+
+    public EFloat(float value) {
+        this.value = value;
+    }
+
+    public float getValue() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+}

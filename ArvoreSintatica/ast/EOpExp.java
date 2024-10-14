@@ -1,0 +1,30 @@
+package ast;
+
+public class EOpExp extends Exp {
+    public String op;
+    public Exp arg1;
+    public Exp arg2;
+
+    public EOpExp(String op, Exp arg1, Exp arg2) {
+        this.op = op;
+        this.arg1 = arg1;
+        this.arg2 = arg2;
+    }
+
+    public String getOp() {
+        return op;
+    }
+
+    public Exp getArg1() {
+        return arg1;
+    }
+
+    public Exp getArg2() {
+        return arg2;
+    }
+
+    @Override
+    public String toString() {
+        return "(" + arg1.toString() + " " + op + " " + arg2.toString() + ")";
+    }
+}
